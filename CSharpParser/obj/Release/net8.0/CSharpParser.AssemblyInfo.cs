@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CSharpParser")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44a04da8805fb61974d93b125a2d5e5fee1af7f2")]
 [assembly: System.Reflection.AssemblyProductAttribute("CSharpParser")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CSharpParser")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

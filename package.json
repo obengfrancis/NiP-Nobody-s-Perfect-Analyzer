@@ -1,0 +1,22 @@
+{
+  "name": "webservices-parser",
+  "version": "1.0.0",
+  "description": "JavaScript/TypeScript parsers for web service exception handling analysis",
+  "main": "parse_javascript.js",
+  "scripts": {
+    "test": "node parse_javascript.js test_javascript_comprehensive.js"
+  },
+  "devDependencies": {
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0"
+  },
+  "keywords": [
+    "parser",
+    "javascript",
+    "typescript",
+    "exception-handling",
+    "resilience"
+  ],
+  "author": "",
+  "license": "MIT"
+}

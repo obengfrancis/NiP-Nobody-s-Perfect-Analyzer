@@ -42,3 +42,4 @@
 /Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/obj/Release/net8.0/CSharpParser.pdb
 /Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/obj/Release/net8.0/CSharpParser.genruntimeconfig.cache
 /Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/obj/Release/net8.0/ref/CSharpParser.dll
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/obj/Release/net8.0/CSharpParser.sourcelink.json
