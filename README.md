@@ -171,7 +171,7 @@ dotnet --version  # 6.0+
 
 2. **Clone the repository:**
 ```bash
-   git clone https://github.com/WebServFH/nip-analyzer-project.git .
+   git clone https://github.com/obengfrancis/NiP-Nobody-s-Perfect-Analyzer.git
 ```
 
 3. **Install Python dependencies:**
