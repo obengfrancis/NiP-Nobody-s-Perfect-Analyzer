@@ -1,0 +1,13 @@
+﻿Language,Try-Catch,Timeout,Retry,Circuit Breaker,Backoff,Status Check
+Python,1735,42,236,0,0,452
+Java,123,75,106,2,0,123
+Javascript,3753,3825,166,357,26,2906
+TypeScript,246,258,134,19,10,51
+Go,0,83,1,0,1,12
+C#,63,11,9,1,0,49
+Ruby,0,145,133,0,0,140
+Kotlin,100,130,31,0,3,25
+Swift,0,77,45,0,8,46
+Single-Repo Total,6020,4646,861,379,48,3804
+,,,,,,
+Multiple,5410,4108,2448,1102,324,4594

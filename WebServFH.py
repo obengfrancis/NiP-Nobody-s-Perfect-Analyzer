@@ -22,7 +22,7 @@ from contextlib import contextmanager
 from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
 from multiprocessing import Manager, Pool
 from pathlib import Path
-import babel
+#import babel
 import psutil
 import timeout_decorator
 from tqdm import tqdm
@@ -104,7 +104,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
 def create_config_file():
     config = ConfigParser()
     config["paths"] = {
-        "input_csv_file_path": "input_csv_file_1.csv",  # Replace with the actual input path
+        "input_csv_file_path": "input_csv_file_19.csv",  # Replace with the actual input file path
         "output_csv_file_path": "analyze_error_handling_output.csv",
         "clone_dir": "cloned_repos",
         "cache_file": "analysis_cache.pkl",
@@ -119,7 +119,7 @@ def update_config_file():
     if "paths" not in config:
         config["paths"] = {}
     config["paths"]["input_csv_file_path"] = config.get(
-        "paths", "input_csv_file_path", fallback="input_csv_file_1.csv" # Replace with the actual input path
+        "paths", "input_csv_file_path", fallback="input_csv_file_19.csv" # Replace with the actual input file path
     )
     config["paths"]["output_csv_file_path"] = config.get(
         "paths",
@@ -167,14 +167,6 @@ def open_file(file_path):
     )
 
 
-
-"""
-This module provides AST-based detection of HTTP client libraries across
-multiple languages. Unlike simple string matching, this approach:
-- Avoids false positives from comments/strings
-- Detects actual import statements
-- Consistent with enhanced resilience parsers
-"""
 
 # ============================================================================
 #  HTTP Library Definitions
@@ -315,10 +307,7 @@ HTTP_LIBRARIES = {
 # ============================================================================
 
 def detect_python_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in Python code using AST parsing.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+   
     found_libraries = set()
     
     try:
@@ -360,10 +349,7 @@ def detect_python_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_java_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in Java code using import statement analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+ 
     found_libraries = set()
     
     # Pattern to match import statements
@@ -407,10 +393,7 @@ def detect_java_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_js_ts_http_libraries(code: str, language: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in JavaScript/TypeScript code using import analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+   
     found_libraries = set()
     
     # Patterns for ES6 imports and require statements
@@ -445,10 +428,7 @@ def detect_js_ts_http_libraries(code: str, language: str) -> Tuple[bool, List[st
 # ============================================================================
 
 def detect_go_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in Go code using import analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+  
     found_libraries = set()
     
     # Pattern for Go imports
@@ -481,10 +461,7 @@ def detect_go_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_csharp_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in C# code using using statement analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+  
     found_libraries = set()
     
     # Pattern for using statements
@@ -516,10 +493,7 @@ def detect_csharp_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_ruby_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in Ruby code using require statement analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+
     found_libraries = set()
     
     # Patterns for Ruby require/require_relative statements
@@ -553,10 +527,7 @@ def detect_ruby_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_kotlin_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in Kotlin code using import statement analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+    
     found_libraries = set()
     
     # Pattern to match Kotlin import statements
@@ -593,10 +564,7 @@ def detect_kotlin_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_swift_http_libraries(code: str) -> Tuple[bool, List[str]]:
-    """
-    Detect HTTP libraries in Swift code using import statement analysis.
-    Returns: (has_http_library: bool, libraries_found: list)
-    """
+   
     found_libraries = set()
     
     # Pattern to match Swift import statements
@@ -637,24 +605,7 @@ def detect_swift_http_libraries(code: str) -> Tuple[bool, List[str]]:
 # ============================================================================
 
 def detect_http_libraries_enhanced(code: str, language: str) -> Tuple[bool, List[str]]:
-    """
-    This function uses language-specific parsers to accurately detect HTTP
-    client libraries by analyzing import statements rather than simple string
-    matching. This eliminates false positives from comments and strings.
-    
-    Args:
-        code: Source code to analyze
-        language: Programming language (lowercase)
-    
-    Returns:
-        Tuple of (has_http_library: bool, libraries_found: List[str])
-    
-    Example:
-        >>> code = 'import requests\\nresponse = requests.get(url)'
-        >>> has_http, libs = detect_http_libraries_enhanced(code, 'python')
-        >>> print(has_http, libs)
-        True ['requests']
-    """
+  
     language = language.lower()
     
     try:
@@ -696,23 +647,14 @@ def detect_http_libraries_enhanced(code: str, language: str) -> Tuple[bool, List
 # ============================================================================
 
 def detect_http_libraries(code: str, language: str) -> Tuple[bool, List[str]]:
-    """
-    Backward compatible wrapper for detect_http_libraries_enhanced.
-    """
+
     return detect_http_libraries_enhanced(code, language)
 
 
 # ============================================================================
 #  Python Parser with Context-Aware Detection
-#  Manual implementation detection
 # ============================================================================
 def parse_python_code(code):
-    """
-    Enhanced Python parser with:
-    - Context-aware keyword detection (reduces false positives)
-    - Import detection for resilience libraries
-    - Detailed pattern tracking
-    """
     error_handling_type = "None"
     try:
         tree = ast.parse(code)
@@ -873,29 +815,18 @@ def parse_python_code(code):
 
 
 def preprocess_java_code(code):
-    """
-    Preprocess Java code to handle common parsing issues:
-    - Remove BOM and normalize Unicode
-    - Handle problematic annotations
-    - Normalize line endings
-    - Remove invalid control characters
-    - Standardize quotes and escape sequences
-
-    This preprocessing improves JavaParser's ability to parse real-world
-    code that may have encoding issues, non-standard formatting, or
-    platform-specific line endings.
-    """
+ 
     # Remove BOM and normalize Unicode
     code = code.replace("\ufeff", "")
     code = unicodedata.normalize("NFKC", code)
     code = code.encode("utf-16", "surrogatepass").decode("utf-16")
 
     # Additional preprocessing to handle problematic annotations
-    code = re.sub(
-        r"@(\w+)\s*(\([^)]*\))?\s*(?=class|interface|enum|@interface)",
-        r"/* @\1\2 */",
-        code,
-    )
+    #code = re.sub(
+    #    r"@(\w+)\s*(\([^)]*\))?\s*(?=class|interface|enum|@interface)",
+    #    r"/* @\1\2 */",
+    #    code,
+    #)
 
     # Normalize line endings
     code = code.replace("\r\n", "\n").replace("\r", "\n")
@@ -981,152 +912,130 @@ def preprocess_java_code(code):
 
     return code
 
-
-# ============================================================================
-# Enhanced Java Parser with Debug Logging
-# Addresses Java zero Advanced/Mixed detection issue
-# ============================================================================
-def detect_java_resilience_patterns_fallback(code):
-    """
-    Fallback regex-based detection for Java resilience patterns.
-    Detects: Resilience4j, Hystrix, Spring Retry libraries
-    Annotations: @Retry, @HystrixCommand, @CircuitBreaker, etc.
-    Class names: RetryConfig, CircuitBreakerRegistry, etc.
-
-    This supplements JAR-based parsing when it misses Java-specific patterns.
-    """
+def detect_java_resilience_patterns_fallback(code: str):
     patterns = {
         "retry": False,
         "circuit_breaker": False,
         "timeout": False,
         "exponential_backoff": False,
+        # optional extra signals:
+        "global_exception_handler": False,
+        "exception_handler": False,
     }
 
     libraries_found = []
 
-    # Detect resilience library imports
     import_patterns = {
         "Resilience4j": r"import\s+io\.github\.resilience4j",
         "Hystrix": r"import\s+com\.netflix\.hystrix",
         "Spring Retry": r"import\s+org\.springframework\.retry",
         "Failsafe": r"import\s+(dev\.failsafe|net\.jodah\.failsafe)",
     }
-
-    for lib_name, pattern in import_patterns.items():
-        if re.search(pattern, code):
+    for lib_name, pat in import_patterns.items():
+        if re.search(pat, code):
             libraries_found.append(lib_name)
 
-    # Detect annotation-based patterns
-    if re.search(r"@(Retryable|Retry)\b", code):
+    # Match @X or /* @X ... */
+    def has_ann(name: str) -> bool:
+        return bool(re.search(rf"@{name}\b|/\*\s*@{name}\b.*?\*/", code, flags=re.DOTALL))
+
+    if has_ann("Retryable") or has_ann("Retry"):
         patterns["retry"] = True
-    if re.search(r"@(HystrixCommand|CircuitBreaker)", code):
+    if has_ann("HystrixCommand") or has_ann("CircuitBreaker"):
         patterns["circuit_breaker"] = True
-    if re.search(r"@TimeLimiter", code):
+    if has_ann("TimeLimiter"):
         patterns["timeout"] = True
-    if re.search(r"@Backoff", code):
+    if has_ann("Backoff"):
         patterns["exponential_backoff"] = True
 
-    # Detect capitalized class name patterns
+    # Config/class-name signals
     if re.search(r"\b(RetryConfig|RetryRegistry|RetryTemplate)\b", code):
         patterns["retry"] = True
-    if re.search(
-        r"\b(CircuitBreakerConfig|CircuitBreakerRegistry|HystrixCommand)\b",
-        code,
-    ):
+    if re.search(r"\b(CircuitBreakerConfig|CircuitBreakerRegistry|HystrixCommand)\b", code):
         patterns["circuit_breaker"] = True
     if re.search(r"\b(TimeLimiterConfig|TimeLimiterRegistry)\b", code):
         patterns["timeout"] = True
     if re.search(r"\b(ExponentialBackOff|BackOffPolicy)\b", code):
         patterns["exponential_backoff"] = True
 
-    # Detect method call patterns
-    if re.search(r"\.(retry|withRetry)\(|Retry\.of\(", code):
+    # Call signals
+    if re.search(r"\bRetry\.of\(|\.(retry|withRetry)\(", code):
         patterns["retry"] = True
-    if re.search(r"CircuitBreaker\.of\(|\.circuitBreaker\(", code):
+    if re.search(r"\bCircuitBreaker\.of\(|\.circuitBreaker\(|withCircuitBreaker\(", code):
         patterns["circuit_breaker"] = True
-    if re.search(r"TimeLimiter\.of\(|\.timeout\(", code):
+    if re.search(r"\bTimeLimiter\.of\(|\.timeout\(|withTimeLimiter\(", code):
         patterns["timeout"] = True
+    if re.search(r"\bretryTemplate\.execute\(", code):
+        patterns["retry"] = True
 
-    has_advanced = any(patterns.values()) or len(libraries_found) > 0
+    # Spring MVC global handlers (NOT circuit breakers)
+    if has_ann("ControllerAdvice") or has_ann("RestControllerAdvice"):
+        patterns["global_exception_handler"] = True
+    if has_ann("ExceptionHandler"):
+        patterns["exception_handler"] = True
+
+    # Decide what “advanced” means
+    # Option A (stricter): only pattern usage
+    has_advanced = any(
+        patterns[k] for k in ["retry", "circuit_breaker", "timeout", "exponential_backoff"]
+    )
 
     return has_advanced, patterns, libraries_found
 
 
 def parse_java_code(code):
-    """
-    Enhanced Java parser with:
-    - Code preprocessing to handle encoding issues
-    - Timeout protection
-    - Debug logging for zero detection issue
-    - Regex fallback for Java-specific resilience patterns
-    - Better error handling
-    """
     error_handling_type = "None"
-    patterns = None
+    patterns = {}
     temp_file_path = None
 
+    # --- Initialize fallback outputs early to avoid UnboundLocalError ---
+    has_advanced_fallback = False
+    fallback_patterns = {}
+    libraries = []
+
     try:
-        # Preprocess Java code to handle encoding and syntax issues
+        # FIX: fallback on original code
+        has_advanced_fallback, fallback_patterns, libraries = \
+            detect_java_resilience_patterns_fallback(code)
+
+        if has_advanced_fallback:
+            logging.info(f"Regex fallback detected patterns: {fallback_patterns}")
+            logging.info(f"Java resilience libraries found: {libraries}")
+
+        # Preprocess for JavaParser compatibility (may still be destructive)
         preprocessed_code = preprocess_java_code(code)
 
-        with tempfile.NamedTemporaryFile(
-            mode="w+", suffix=".java", delete=False
-        ) as temp_file:
-            temp_file_path = temp_file.name
-            temp_file.write(preprocessed_code)
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".java", delete=False) as f:
+            temp_file_path = f.name
+            f.write(preprocessed_code)
 
         jar_path = Path("target/your-artifact-id-1.0-SNAPSHOT.jar").resolve()
 
-        # Add timeout to prevent hanging
         result = subprocess.run(
             ["java", "-jar", str(jar_path), temp_file_path],
             capture_output=True,
             text=True,
             check=True,
-            timeout=30,  # 30 second timeout
+            timeout=30,
         )
-
-        # Debug logging for Java parser output
-        logging.debug(
-            f"Java parser raw output: {result.stdout[:200]}"
-        )  # Log first 200 chars
 
         parsed_output = json.loads(result.stdout)
-        has_basic_handling = parsed_output.get("hasBasicHandling", False)
-        has_advanced_handling = parsed_output.get("hasAdvancedHandling", False)
+        has_basic_handling = bool(parsed_output.get("hasBasicHandling", False))
+        has_advanced_handling = bool(parsed_output.get("hasAdvancedHandling", False))
 
-        # Debug logging for detection results
-        logging.debug(
-            f"Java detection - Basic: {has_basic_handling}, Advanced: {has_advanced_handling}"
-        )
+        # Always ensure patterns is a dict
+        jar_patterns = parsed_output.get("patterns") or {}
+        if not isinstance(jar_patterns, dict):
+            jar_patterns = {}
 
-        # Regex fallback for Java-specific resilience patterns
-        # If JAR doesn't detect advanced patterns, try regex-based detection
-        if not has_advanced_handling:
-            (
-                has_advanced_fallback,
-                fallback_patterns,
-                libraries,
-            ) = detect_java_resilience_patterns_fallback(preprocessed_code)
+        # Merge fallback (regardless of JAR results)
+        if has_advanced_fallback:
+            has_advanced_handling = True
+            for k, v in (fallback_patterns or {}).items():
+                if v:
+                    jar_patterns[k] = True
 
-            if has_advanced_fallback:
-                logging.info(
-                    f"Regex fallback detected Java resilience patterns: {fallback_patterns}"
-                )
-                logging.info(
-                    f"Java resilience libraries found: {libraries}"
-                )
-                has_advanced_handling = True
-
-                # Initialize patterns dict if not present
-                if "patterns" not in parsed_output:
-                    parsed_output["patterns"] = {}
-
-                # Merge fallback patterns
-                for pattern_name, detected in fallback_patterns.items():
-                    if detected:
-                        parsed_output["patterns"][pattern_name] = True
-
+        # Final classification
         if has_basic_handling and has_advanced_handling:
             error_handling_type = "Mixed"
         elif has_basic_handling:
@@ -1134,45 +1043,71 @@ def parse_java_code(code):
         elif has_advanced_handling:
             error_handling_type = "Advanced"
 
-        # Extract pattern details if available
-        patterns = parsed_output.get("patterns", {})
+        patterns = jar_patterns
 
     except subprocess.TimeoutExpired:
         logging.error("Java parsing timed out after 30 seconds")
-        return error_handling_type, None  # Indicate parser failure
+        if has_advanced_fallback:
+            return "Advanced", (fallback_patterns or {})
+        return "None", {}
+
     except subprocess.CalledProcessError as e:
         logging.error(f"Error running JavaParser analyzer: {e.stderr}")
+
+        # If we have partial stdout, try to parse; otherwise fallback
         if e.stdout:
             try:
                 parsed_output = json.loads(e.stdout)
-                has_basic_handling = parsed_output.get("hasBasicHandling", False)
-                has_advanced_handling = parsed_output.get(
-                    "hasAdvancedHandling", False
-                )
+                has_basic_handling = bool(parsed_output.get("hasBasicHandling", False))
+                has_advanced_handling = bool(parsed_output.get("hasAdvancedHandling", False))
+
+                jar_patterns = parsed_output.get("patterns") or {}
+                if not isinstance(jar_patterns, dict):
+                    jar_patterns = {}
+
+                if has_advanced_fallback:
+                    has_advanced_handling = True
+                    for k, v in (fallback_patterns or {}).items():
+                        if v:
+                            jar_patterns[k] = True
+
                 if has_basic_handling and has_advanced_handling:
                     error_handling_type = "Mixed"
                 elif has_basic_handling:
                     error_handling_type = "Basic"
                 elif has_advanced_handling:
                     error_handling_type = "Advanced"
-                patterns = parsed_output.get("patterns", {})
+                else:
+                    error_handling_type = "None"
+
+                return error_handling_type, jar_patterns
+
             except json.JSONDecodeError:
-                logging.error("Failed to parse partial results")
-                return error_handling_type, None
+                logging.error("Failed to parse partial results as JSON")
+
+        # No usable output → fallback
+        if has_advanced_fallback:
+            return "Advanced", (fallback_patterns or {})
+        return "None", {}
+
     except json.JSONDecodeError as e:
-        logging.error(f"Error parsing JavaParser output: {e}")
-        return error_handling_type, None
+        logging.error(f"Error parsing JavaParser output JSON: {e}")
+        if has_advanced_fallback:
+            return "Advanced", (fallback_patterns or {})
+        return "None", {}
+
     except Exception as e:
-        logging.error(f"Unexpected error during Java parsing: {str(e)}")
-        return error_handling_type, None
+        logging.error(f"Unexpected error during Java parsing: {e}")
+        if has_advanced_fallback:
+            return "Advanced", (fallback_patterns or {})
+        return "None", {}
+
     finally:
         if temp_file_path and os.path.exists(temp_file_path):
             try:
                 os.remove(temp_file_path)
             except Exception as e:
-                logging.error(
-                    f"Error removing temporary file: {str(e)}"
-                )
+                logging.error(f"Error removing temporary file: {e}")
 
     return error_handling_type, patterns
 
@@ -1182,12 +1117,7 @@ BABEL_PLUGINS = ["jsx", "typescript", "classProperties", "objectRestSpread"]
 
 
 def parse_javascript_code(code):
-    """
-    Enhanced JavaScript parser that extracts exception handling patterns.
-    
-    Returns:
-        tuple: (error_handling_type: str, patterns: dict or None)
-    """
+
     error_handling_type = "None"
     patterns = None
     temp_file_path = None
@@ -1315,25 +1245,22 @@ def parse_typescript_code(code):
 
 
 def parse_go_code(code):
-    """
-    Enhanced Go parser that handles both JSON (new) and CSV (old) output formats.
-    
-    Returns:
-        tuple: (error_handling_type: str, patterns: dict or None)
-    """
     error_handling_type = "None"
     patterns = None
     temp_file_path = None
 
     try:
-        temp_file_path = os.path.join("integration_test", "temp_go_code.go")
-        with open(temp_file_path, "w") as f:
-            f.write(code)
+        # Use tempfile for thread-safe unique temp files
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".go",
+            delete=False  # Don't auto-delete; we'll delete manually after parsing
+        ) as temp_file:
+            temp_file_path = temp_file.name
+            temp_file.write(code)
+            temp_file.flush()  # Ensure data is written to disk
 
         logging.info(f"Temp Go file created at: {temp_file_path}")
-        if not os.path.exists(temp_file_path):
-            logging.error("Temp Go file was not created.")
-            return error_handling_type, None
 
         result = subprocess.run(
             ["./parse_go_code/parse_go_code", temp_file_path],
@@ -1400,6 +1327,13 @@ def parse_go_code(code):
     except Exception as e:
         logging.error(f"Go parsing failed: {e}")
         return error_handling_type, None
+    finally:
+        # Clean up temporary file
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+            except Exception as e:
+                logging.warning(f"Failed to remove temporary Go file {temp_file_path}: {e}")
 
     return error_handling_type, patterns
 
@@ -1407,12 +1341,7 @@ def parse_go_code(code):
 
 # Ruby parsing
 def parse_ruby_code(code):
-    """
-    Enhanced Ruby parser that extracts exception handling patterns.
-    
-    Returns:
-        tuple: (error_handling_type: str, patterns: dict or None)
-    """
+  
     error_handling_type = "None"
     patterns = None
     temp_file_path = None
@@ -1509,12 +1438,7 @@ C_SHARP_PARSER_PATH = os.path.abspath(
 )
 
 def parse_csharp_code(code):
-    """
-    Enhanced C# parser that handles both JSON (new) and CSV (old) output formats.
-    
-    Returns:
-        tuple: (error_handling_type: str, patterns: dict or None)
-    """
+   
     error_handling_type = "None"
     patterns = None
     temp_file_path = None
@@ -1619,12 +1543,7 @@ def parse_csharp_code(code):
 JAVA_COMPILER_AVAILABLE = shutil.which("java") is not None
 
 def parse_kotlin_code(code):
-    """
-    Enhanced Kotlin parser that extracts exception handling patterns.
-    
-    Returns:
-        tuple: (error_handling_type: str, patterns: dict or None)
-    """
+ 
     global JAVA_COMPILER_AVAILABLE
     error_handling_type = "None"
     patterns = None
@@ -1737,13 +1656,7 @@ def parse_kotlin_code(code):
 
 # Swift parsing
 def parse_swift_code(code):
-    """
-    Enhanced Swift parser that extracts exception handling patterns.
-    Uses parse_swift.py (Python-based) instead of SourceKitten.
-    
-    Returns:
-        tuple: (error_handling_type: str, patterns: dict or None)
-    """
+  
     error_handling_type = "None"
     patterns = None
     temp_file_path = None
@@ -1840,18 +1753,31 @@ def get_clone_path(repo_url: str, clone_dir: str) -> str:
     
     return os.path.join(clone_dir, safe_name)
 
+# Git error detection
+def is_permanent_git_error(stderr: str) -> bool:
+    # Detect Git errors that are permanent and should not be retried.
+
+    if not stderr:
+        return False
+    
+    s = stderr.lower()
+    permanent_patterns = [
+        "repository not found",
+        "authentication failed",
+        "access rights",
+        "could not read from remote repository",
+        "the requested url returned error: 404",
+        "the requested url returned error: 403",
+    ]
+    
+    return any(p in s for p in permanent_patterns)
 
 
 # Repository cloning
 #@functools.lru_cache(maxsize=128)
-def clone_repo(repo_url, clone_path, retries=3, delay=5, backoff_factor=2, timeout=180):
+def clone_repo(repo_url, clone_path, retries=2, delay=5, backoff_factor=2, timeout=120):
     """
     Clone a repository with timeout and retry logic.
-    Args:
-        timeout: Clone timeout in seconds (default 180s = 3 minutes)
-        retries: Number of retry attempts (default 3)
-    Returns:
-        bool: True if clone successful, False otherwise
     """
     start_time = time.time()
     attempt = 0
@@ -1885,12 +1811,19 @@ def clone_repo(repo_url, clone_path, retries=3, delay=5, backoff_factor=2, timeo
             )
             
         except CalledProcessError as e:
+            stderr = e.stderr or ""
             logging.error(
                 f"Error cloning repository {repo_url}: {e.stderr.strip()} "
                 f"(attempt {attempt + 1}/{retries})"
             )
+            
+            
+            # Check for permanent errors and don't retry permanent failures
+            if is_permanent_git_error(stderr):
+                logging.error(f"Permanent git error for {repo_url}; not retrying.")
+                break  # Exit retry loop immediately
 
-        # Shared backoff for both error types
+        # Shared backoff for retriable errors only
         attempt += 1
         if attempt < retries:
             sleep_time = delay + (random.uniform(0, 1) * backoff_factor)
@@ -1904,9 +1837,20 @@ def clone_repo(repo_url, clone_path, retries=3, delay=5, backoff_factor=2, timeo
     )
     return False
 
+
+
+# Directories to skip during analysis
+SKIP_DIRS = {
+    ".git", "dist", "build", "out", "target", ".next", "__pycache__", "bundle",
+    ".idea", ".vscode", # IDE files
+    "coverage",  # Test/coverage
+    "node_modules", "vendor", ".venv", "venv", "deps", # Dependencies (imports detected in source)
+    ".gradle", ".maven",  # Generated
+}
+
+
 # ============================================================================
 # Enhanced analyze_code with Better Metrics
-# Addresses concern about distinguishing parser failures from "None"
 # ============================================================================
 def analyze_code(repo_path):
     """
@@ -1953,13 +1897,24 @@ def analyze_code(repo_path):
         "kotlin": parse_kotlin_code,
         "swift": parse_swift_code,
     }
-
+    """
     files_to_analyze = [
         os.path.join(root, file)
         for root, _, files in os.walk(repo_path)
         for file in files
         if any(file.endswith(ext) for ext in extension_to_language.keys())
     ]
+    """
+     # Collect files with directory pruning
+    files_to_analyze = []
+    for root, dirs, files in os.walk(repo_path):
+        # Prune directories in-place (prevents os.walk from descending)
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        
+        for file in files:
+            if any(file.endswith(ext) for ext in extension_to_language.keys()):
+                files_to_analyze.append(os.path.join(root, file))
+
 
     for file_path in files_to_analyze:
         if not os.path.exists(file_path):
@@ -2067,7 +2022,7 @@ def analyze_code(repo_path):
 def process_repo(row, clone_dir):
     """
     Process a single repository: clone, analyze, and return results.
-    Now uses unique clone paths to prevent directory collisions.
+    Uses unique clone paths to prevent directory collisions.
     """
     try:
         log_system_stats()
@@ -2081,7 +2036,7 @@ def process_repo(row, clone_dir):
         logging.info(f"Processing repository {repo_url}...")
         logging.debug(f"Clone path: {clone_path}")
         
-        if clone_repo(repo_url, clone_path, retries=3, delay=5, backoff_factor=2, timeout=180):
+        if clone_repo(repo_url, clone_path, retries=2, delay=5, backoff_factor=2, timeout=120):
             if not os.listdir(clone_path):
                 logging.error(f"Clone repository {clone_path} is empty")
                 return None
@@ -2174,8 +2129,8 @@ def save_cache_incrementally(cache, cache_file, batch_size=1000):
 def batch_process_repositories(rows, batch_size, log_queue, clone_dir):
     total_batches = (len(rows) + batch_size - 1) // batch_size
 
-    redirect_logs_to_file() # Redirect logs to file to avoid distracting progress bar
-    suppress_warnings() # Suppress specific warnings during processing
+    redirect_logs_to_file() 
+    suppress_warnings() 
 
     for i in range(0, len(rows), batch_size):
         batch = rows[i : i + batch_size]
@@ -2184,9 +2139,13 @@ def batch_process_repositories(rows, batch_size, log_queue, clone_dir):
         )
 
         log_system_stats()
+        
+        # Cap process count at 4 instead of using all cores
+        num_procs = min(4, os.cpu_count() or 1)
+        logging.info(f"Using {num_procs} worker processes (CPU count: {os.cpu_count()})")
 
         with Pool(
-            processes=os.cpu_count(),
+            processes=num_procs,
             initializer=worker_init,
             initargs=(log_queue,),
         ) as pool:
@@ -2316,9 +2275,16 @@ def main():
     logging.info(f"Repositories in output CSV: {len(cache)}")
 
     listener.stop()
+    try:
+        log_queue.close()
+        log_queue.join_thread()
+    except Exception:
+        pass
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    import multiprocessing as mp
+    mp.set_start_method("spawn", force=True)
     if not os.path.exists("config.ini"):
         create_config_file()
     else:

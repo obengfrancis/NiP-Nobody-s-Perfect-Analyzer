@@ -85,25 +85,25 @@ Compiled binary - no additional dependencies!
 echo "Checking dependencies..."
 
 echo -n "Python 3: "
-python3 --version 2>/dev/null || echo "❌ Not found"
+python3 --version 2>/dev/null || echo "Not found"
 
 echo -n "Java: "
-java -version 2>&1 | head -1 || echo "❌ Not found"
+java -version 2>&1 | head -1 || echo "Not found"
 
 echo -n "Node.js: "
-node --version 2>/dev/null || echo "❌ Not found"
+node --version 2>/dev/null || echo "Not found"
 
 echo -n "Ruby: "
-ruby --version 2>/dev/null || echo "❌ Not found"
+ruby --version 2>/dev/null || echo "Not found"
 
 echo -n "Go: "
-go version 2>/dev/null || echo "❌ Not found"
+go version 2>/dev/null || echo "Not found"
 
 echo -n "Mono/.NET: "
-mono --version 2>/dev/null | head -1 || dotnet --version 2>/dev/null || echo "❌ Not found"
+mono --version 2>/dev/null | head -1 || dotnet --version 2>/dev/null || echo "Not found"
 
 echo -n "Ruby parser gem: "
-gem list parser | grep "^parser " || echo "❌ Not installed"
+gem list parser | grep "^parser " || echo "Not installed"
 
 echo ""
 echo "Parser files:"

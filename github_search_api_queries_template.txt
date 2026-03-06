@@ -1,0 +1,54 @@
+Replication package: GitHub Search API queries (no language filter)
+========================================================
+
+Purpose
+-------
+These query strings were used for initial repository discovery via the GitHub Search API.
+They are NOT restricted by language. Language membership is determined downstream by NiP
+based on file extensions and parser success.
+
+Base query (template)
+---------------------
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false
+
+Partitioned queries (star buckets)
+----------------------------------
+Note: GitHub Search API returns at most ~1000 results per query. We partitioned the
+discovery space using star buckets, then deduplicated repositories by full name (owner/repo).
+
+Bucket 1 (stars:0..0)
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false stars:0..0
+
+Bucket 2 (stars:1..1)
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false stars:1..1
+
+Bucket 3 (stars:2..10)
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false stars:2..10
+
+Bucket 4 (stars:11..50)
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false stars:11..50
+
+Bucket 5 (stars:51..200)
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false stars:51..200
+
+Bucket 6 (stars:>200)
+("web service" OR "REST API" OR "SOAP API" OR microservices OR "API integration" OR "web API")
+in:readme,description fork:false archived:false stars:>200
+
+REST API call template (optional)
+---------------------------------
+curl -H "Accept: application/vnd.github+json" \
+     -H "Authorization: Bearer $GITHUB_TOKEN" \
+"https://api.github.com/search/repositories?q=<URL_ENCODED_QUERY>&per_page=100&page=1"
+
+Implementation notes
+--------------------
+- Run each bucket query with pagination (per_page=100, page=1..N).
+- Deduplicate by repository full name (owner/repo).
+- NiP performs language filtering and analysis after cloning.

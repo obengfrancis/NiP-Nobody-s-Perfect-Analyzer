@@ -1,0 +1,368 @@
+=================================================================================
+Python Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=Python, caption={Python Advanced Exception Handling Exemplar}]
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+import time
+
+# Retry with exponential backoff and timeout
+session = requests.Session()
+retry_strategy = Retry(
+    total=3,
+    backoff_factor=2,  # 1s, 2s, 4s
+    status_forcelist=[429, 500, 502, 503, 504]
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("https://", adapter)
+
+try:
+    response = session.get(
+        "https://api.example.com/data",
+        timeout=5.0  # 5 second timeout
+    )
+    response.raise_for_status()
+    data = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"Failed after retries: {e}")
+\end{lstlisting}
+
+=================================================================================
+Java Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=Java, caption={Java Advanced Exception Handling Exemplar}]
+// Retry with exponential backoff
+int maxRetries = 3;
+for (int attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+        var req = HttpRequest.newBuilder(URI.create(url))
+            .GET()
+            .timeout(Duration.ofSeconds(5))  // timeout
+            .build();
+        var res = HttpClient.newHttpClient()
+            .send(req, HttpResponse.BodyHandlers.ofString());
+        
+        if (res.statusCode() / 100 != 2) {
+            throw new RuntimeException("HTTP " + res.statusCode());
+        }
+        break; // success
+        
+    } catch (Exception e) {
+        if (attempt == maxRetries - 1) throw e; // final attempt
+        long backoff = (long) Math.pow(2, attempt) * 1000L; // 1s, 2s, 4s
+        Thread.sleep(backoff);
+    }
+}
+\end{lstlisting}
+
+=================================================================================
+JavaScript Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=JavaScript, caption={JavaScript Advanced Exception Handling Exemplar}]
+const axios = require('axios');
+const axiosRetry = require('axios-retry').default;
+
+// Configure retry with exponential backoff
+axiosRetry(axios, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay, // 1s, 2s, 4s
+    retryCondition: (error) => {
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+               error.response?.status >= 500;
+    }
+});
+
+try {
+    const response = await axios.get('https://api.example.com/data', {
+        timeout: 5000  // 5 second timeout
+    });
+    const data = response.data;
+} catch (error) {
+    console.error(`Failed after retries: ${error.message}`);
+}
+\end{lstlisting}
+
+=================================================================================
+TypeScript Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=TypeScript, caption={TypeScript Advanced Exception Handling Exemplar}]
+import axios, { AxiosError } from 'axios';
+import axiosRetry from 'axios-retry';
+
+// Configure retry with exponential backoff and timeout
+axiosRetry(axios, {
+    retries: 3,
+    retryDelay: (retryCount) => {
+        return Math.pow(2, retryCount - 1) * 1000; // 1s, 2s, 4s
+    },
+    retryCondition: (error: AxiosError) => {
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+               (error.response?.status ?? 0) >= 500;
+    }
+});
+
+try {
+    const response = await axios.get<Record<string, unknown>>(
+        'https://api.example.com/data',
+        { timeout: 5000 }  // 5 second timeout
+    );
+    const data = response.data;
+} catch (error) {
+    console.error(`Failed after retries: ${(error as Error).message}`);
+}
+\end{lstlisting}
+
+
+=================================================================================
+C# Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language={[Sharp]C}, caption={C\# Advanced Exception Handling Exemplar}]
+using Polly;
+using Polly.Timeout;
+
+// Circuit breaker + retry with exponential backoff
+var policy = Policy
+    .Handle<HttpRequestException>()
+    .Or<TimeoutRejectedException>()
+    .WaitAndRetryAsync(
+        retryCount: 3,
+        sleepDurationProvider: retryAttempt => 
+            TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), // 2s, 4s, 8s
+        onRetry: (exception, timeSpan, retryCount, context) => {
+            Console.WriteLine($"Retry {retryCount} after {timeSpan}");
+        })
+    .WrapAsync(Policy.TimeoutAsync(5)); // 5 second timeout
+
+try {
+    var response = await policy.ExecuteAsync(async () =>
+        await httpClient.GetAsync("https://api.example.com/data"));
+    
+    response.EnsureSuccessStatusCode();
+    var data = await response.Content.ReadAsStringAsync();
+} catch (Exception e) {
+    Console.Error.WriteLine($"Failed after retries: {e.Message}");
+}
+\end{lstlisting}
+
+=================================================================================
+Go Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=Go, caption={Go Advanced Exception Handling Exemplar}]
+import (
+    "context"
+    "time"
+    "github.com/cenkalti/backoff/v4"
+)
+
+// Retry with exponential backoff and timeout
+operation := func() error {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+    
+    req, _ := http.NewRequestWithContext(ctx, "GET", 
+        "https://api.example.com/data", nil)
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+    
+    if resp.StatusCode/100 != 2 {
+        return fmt.Errorf("HTTP %d", resp.StatusCode)
+    }
+    return nil
+}
+
+// Exponential backoff: 1s, 2s, 4s (max 3 retries)
+expBackoff := backoff.NewExponentialBackOff()
+expBackoff.MaxElapsedTime = 30 * time.Second
+
+err := backoff.Retry(operation, backoff.WithMaxRetries(expBackoff, 3))
+if err != nil {
+    log.Printf("Failed after retries: %v", err)
+}
+\end{lstlisting}
+
+=================================================================================
+Ruby Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=Ruby, caption={Ruby Advanced Exception Handling Exemplar}]
+require 'retriable'
+require 'net/http'
+require 'timeout'
+
+# Retry with exponential backoff and timeout
+Retriable.retriable(
+    tries: 3,
+    base_interval: 1.0,        # start at 1 second
+    multiplier: 2.0,            # exponential: 1s, 2s, 4s
+    max_elapsed_time: 30.0,    # circuit breaker: max 30s total
+    on: [Net::OpenTimeout, Net::ReadTimeout, Net::HTTPServerError]
+) do
+    uri = URI("https://api.example.com/data")
+    
+    # Timeout wrapper
+    response = Timeout.timeout(5) do  # 5 second timeout
+        Net::HTTP.get_response(uri)
+    end
+    
+    raise Net::HTTPServerError if response.code.to_i >= 500
+    JSON.parse(response.body)
+end
+\end{lstlisting}
+
+
+=================================================================================
+Kotlin Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=Kotlin, caption={Kotlin Advanced Exception Handling Exemplar}]
+import kotlinx.coroutines.*
+import kotlin.math.pow
+
+// Retry with exponential backoff and timeout
+suspend fun fetchWithRetry(url: String): String {
+    val maxRetries = 3
+    
+    repeat(maxRetries) { attempt ->
+        try {
+            return withTimeout(5000L) {  // 5 second timeout
+                val connection = URL(url).openConnection() as HttpURLConnection
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                
+                if (connection.responseCode / 100 != 2) {
+                    throw RuntimeException("HTTP ${connection.responseCode}")
+                }
+                connection.inputStream.bufferedReader().readText()
+            }
+        } catch (e: Exception) {
+            if (attempt == maxRetries - 1) throw e  // final attempt
+            
+            // Exponential backoff: 1s, 2s, 4s
+            val backoff = (2.0.pow(attempt.toDouble()) * 1000).toLong()
+            delay(backoff)
+        }
+    }
+    throw RuntimeException("Failed after $maxRetries attempts")
+}
+\end{lstlisting}
+
+=================================================================================
+Swift Advanced Exception handling Exemplar
+=================================================================================
+\begin{lstlisting}[language=Swift, caption={Swift Advanced Exception Handling Exemplar}]
+import Foundation
+
+// Retry with exponential backoff and timeout
+func fetchWithRetry(url: String) async throws -> Data {
+    let maxRetries = 3
+    
+    for attempt in 0..<maxRetries {
+        do {
+            let url = URL(string: url)!
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 5.0  // 5 second timeout
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200..<300).contains(httpResponse.statusCode) else {
+                throw URLError(.badServerResponse)
+            }
+            
+            return data  // success
+            
+        } catch {
+            if attempt == maxRetries - 1 { throw error }  // final attempt
+            
+            // Exponential backoff: 1s, 2s, 4s
+            let backoff = pow(2.0, Double(attempt)) * 1_000_000_000
+            try await Task.sleep(nanoseconds: UInt64(backoff))
+        }
+    }
+    
+    throw URLError(.cannotConnectToHost)
+}
+\end{lstlisting}
+```
+
+---
+
+## ADVANCED FEATURES DEMONSTRATED**
+
+Each exemplar includes:
+
+### **1. Retry Logic (3 attempts)**
+-  All languages: 3 retry attempts
+-  Breaks on success
+-  Throws/returns error on final failure
+
+### **2. Exponential Backoff**
+-  Pattern: 1s, 2s, 4s (or 2s, 4s, 8s)
+-  Formula: `2^attempt × base_delay`
+-  Prevents thundering herd
+
+### **3. Timeout**
+-  5-second timeout per request
+-  Prevents infinite hangs
+-  Language-appropriate timeout mechanism
+
+### **4. Circuit Breaker (where applicable)**
+-  Max elapsed time limits
+-  Stops after threshold
+-  Prevents cascading failures
+
+### **5. Status Code Checking**
+-  Retries on 5xx errors
+-  Success on 2xx codes
+-  Fails fast on 4xx (client errors)
+
+---
+
+## ** LANGUAGE-SPECIFIC NOTES**
+
+### **Python:**
+- Uses `requests` with `Retry` adapter
+- Built-in exponential backoff
+- Timeout via `timeout=` parameter
+
+### **Java:**
+- Manual retry loop with `Thread.sleep()`
+- `HttpClient` with `.timeout(Duration)`
+- Exponential backoff: `Math.pow(2, attempt)`
+
+### **JavaScript:**
+- Uses `axios` + `axios-retry`
+- Automatic exponential backoff
+- Timeout via `timeout:` config
+
+### **TypeScript:**
+- Same as JavaScript + type safety
+- Custom backoff function
+- Type-safe error handling
+
+### **C#:**
+- Uses **Polly** library (industry standard)
+- `WaitAndRetryAsync` with exponential backoff
+- `TimeoutAsync` policy wrapper
+
+### **Go:**
+- Uses `backoff` library
+- Context-based timeout
+- `backoff.Retry()` with exponential strategy
+
+### **Ruby:**
+- Uses **Retriable** gem
+- Built-in exponential backoff
+- `Timeout.timeout()` wrapper
+
+### **Kotlin:**
+- Coroutines with `withTimeout`
+- Manual retry loop with `delay()`
+- Suspend function for async
+
+### **Swift:**
+- Async/await with `Task.sleep()`
+- `URLRequest.timeoutInterval`
+- Exponential backoff in nanoseconds

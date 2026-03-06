@@ -1,108 +1,94 @@
-package main
+package modules
 
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/gofiber/fiber/v2"
+	"github.com/tnp2004/translate-cli/config"
 )
 
-type Classification struct {
-	CVSSScore string `yaml:"cvss-score,omitempty"`
+type IModule interface {
+	Translate(word, target, source string)
 }
 
-type Info struct {
-	Name           string         `yaml:"name"`
-	Severity       string         `yaml:"severity"`
-	Description    string         `yaml:"description"`
-	Classification Classification `yaml:"classification,omitempty"`
+type module struct {
+	config config.IConfig
 }
 
-type Data struct {
-	ID       string `yaml:"id"`
-	Info     Info   `yaml:"info"`
-	FilePath string `json:"file_path"`
+func InitModule(config config.IConfig) IModule {
+	return &module{config}
 }
 
-func main() {
-	if len(os.Args) != 3 {
-		fmt.Println("Usage: go run main.go <directory1[,directory2,...]> <output_file>")
-		os.Exit(1)
+type TranslateResponse struct {
+	DetectedLanguage struct {
+		Language string  `json:"language"`
+		Score    float64 `json:"score"`
+	} `json:"detectedLanguage"`
+	Translations []struct {
+		Text string `json:"text"`
+		To   string `json:"to"`
+	} `json:"translations"`
+}
+
+type Translate struct {
+	TranslatedText string `json:"Text"`
+}
+
+func (m *module) setHeader(agent *fiber.Agent) {
+	agent.Set("Content-type", "application/json")
+	agent.Set("X-RapidAPI-Key", m.config.App().ApiKey())
+	agent.Set("X-RapidAPI-Host", m.config.App().ApiHost())
+}
+
+func (m *module) Translate(word, target, source string) {
+	endpoint := m.config.App().Url() + fmt.Sprintf("/translate?to%v=%v&api-version=3.0&from=%v&profanityAction=NoAction&textType=plain", "%5B0%5D", target, source)
+
+	payload := []Translate{
+		{
+			TranslatedText: word,
+		},
 	}
 
-	input := os.Args[1]
-	outputFile := os.Args[2]
-	var directories []string
-
-	// Check if the input contains a comma
-	if strings.Contains(input, ",") {
-		directories = strings.Split(input, ",")
-	} else {
-		directories = []string{input}
-	}
-
-	var data []Data
-
-	for _, directory := range directories {
-		fmt.Println("Generating data for", directory)
-
-		err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				fmt.Printf("Error accessing path %s: %v\n", path, err)
-				return err
-			}
-			if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
-				yamlFile, err := ioutil.ReadFile(path)
-				if err != nil {
-					fmt.Printf("Error reading YAML file %s: %v\n", path, err)
-					return err
-				}
-
-				var d Data
-				err = yaml.Unmarshal(yamlFile, &d)
-				if err != nil {
-					fmt.Printf("Error unmarshalling YAML file %s: %v\n", path, err)
-					return err
-				}
-				if d.Info.Classification.CVSSScore == "" {
-					d.Info.Classification.CVSSScore = "N/A"
-				}
-				if d.Info.Classification == (Classification{}) {
-					d.Info.Classification.CVSSScore = "N/A"
-				}
-				fpath := strings.Replace(path, "/home/runner/work/nuclei-templates/nuclei-templates/", "", 1)
-				d.FilePath = fpath
-
-				data = append(data, d)
-			}
-			return nil
-		})
-
-		if err != nil {
-			fmt.Printf("Error reading directory: %v\n", err)
-			os.Exit(1)
-		}
-	}
-
-	var jsonData []byte
-	for _, d := range data {
-		temp, err := json.Marshal(d)
-		if err != nil {
-			fmt.Printf("Error marshalling JSON: %v\n", err)
-			os.Exit(1)
-		}
-		jsonData = append(jsonData, temp...)
-		jsonData = append(jsonData, byte('\n'))
-	}
-	err := ioutil.WriteFile(outputFile, jsonData, 0644)
+	payloadByte, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
-		fmt.Printf("Error writing JSON data to file: %v\n", err)
-		os.Exit(1)
+		fmt.Printf("json marshal failed: %v", err)
+		return
 	}
 
-	fmt.Println("JSON data written to", outputFile)
+	agent := fiber.Post(endpoint)
+	m.setHeader(agent)
+	agent.Body(payloadByte)
+	status, body, errs := agent.Bytes()
+
+	if status != 200 {
+		fmt.Printf("status code: %v something went wrong", status)
+		return
+	}
+
+	if len(errs) != 0 {
+		for _, e := range errs {
+			fmt.Println("Error: ", e)
+			return
+		}
+	}
+
+	translationRes := new([]TranslateResponse)
+	if err := json.Unmarshal(body, translationRes); err != nil {
+		fmt.Printf("json unmarshal failed: %v", err)
+		return
+	}
+
+	// Print translation result
+	for i, t := range *translationRes {
+		fmt.Print("Translation: ")
+
+		// The end of translation result
+		if i == len(*translationRes)-1 {
+			fmt.Printf("%v\n", t.Translations[i].Text)
+			return
+		}
+
+		fmt.Printf("%v,", t.Translations[i].Text)
+	}
 }
