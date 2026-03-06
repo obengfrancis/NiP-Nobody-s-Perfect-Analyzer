@@ -115,7 +115,7 @@ WebServFH automatically detects HTTP client library usage across all supported l
 -----------------------------------------------------------------------------------------------------------------------
 ## Resilience Patterns Detected
 -----------------------------------------------------------------------------------------------------------------------
-WebServFH identifies **six advanced resilience patterns** commonly used in web service clients:
+WebServFH identifies **six resilience patterns** commonly used in web service clients:
 
 | Pattern | Description |
 |--------|-------------|
