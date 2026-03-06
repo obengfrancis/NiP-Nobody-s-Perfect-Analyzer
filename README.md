@@ -345,7 +345,7 @@ Contributions are welcome! Please:
 ## Contact
 -----------------------------------------------------------------------------------------------------------------------
 For questions, issues, or feature requests:
-- **GitHub Issues:** https://github.com/WebServFH/nip-analyzer-project/issues
+- **GitHub Issues:** https://github.com/obengfrancis/NiP-Nobody-s-Perfect-Analyzer/issues
 - **Email:** [my-email@domain.com]
 
 
