@@ -104,7 +104,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
 def create_config_file():
     config = ConfigParser()
     config["paths"] = {
-        "input_csv_file_path": "input_csv_file_19.csv",  # Replace with the actual input file path
+        "input_csv_file_path": "input_csv_file.csv",  # Replace with the actual input file path
         "output_csv_file_path": "analyze_error_handling_output.csv",
         "clone_dir": "cloned_repos",
         "cache_file": "analysis_cache.pkl",
@@ -119,7 +119,7 @@ def update_config_file():
     if "paths" not in config:
         config["paths"] = {}
     config["paths"]["input_csv_file_path"] = config.get(
-        "paths", "input_csv_file_path", fallback="input_csv_file_19.csv" # Replace with the actual input file path
+        "paths", "input_csv_file_path", fallback="input_csv_file.csv" # Replace with the actual file path, if input splitted
     )
     config["paths"]["output_csv_file_path"] = config.get(
         "paths",

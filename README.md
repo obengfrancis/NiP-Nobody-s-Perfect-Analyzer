@@ -27,13 +27,26 @@ WebServFH performs comprehensive analysis of exception handling strategies in we
 - **Detecting resilience patterns** including timeouts, retries, circuit breakers, exponential backoff, and status checks
 - **Generating detailed reports** with pattern prevalence and adoption metrics
 
+
+## Data Availability
+
+All data needed to reproduce the study is included in this repository. Row counts
+correspond to the pipeline stages in Table 3.
+
+| File | Contents | Rows |
+|------|----------|------|
+| `input_csv_file.csv` | The repository URL list submitted to NiP — the mined set (Table 3, "Mined URLs"). **This is the file NiP consumes as input** (see [Usage/Running](#usagerunning)); kept under this name so the documented run command works unchanged. | 19,231 |
+| `mined_repositories.csv` | Identical copy of `input_csv_file.csv` under a self-describing name, so the mined set and its URLs can be located directly. | 19,231 |
+| `Exception_Handling_Analysis_Output/nip_analyzer_output.csv` | NiP's full per-repository results — one row per cloned repository, with strategy category (None/Basic/Mixed/Advanced), detected language(s), HTTP libraries, the six resilience-pattern flags, and parser success rate. | 17,410 |
+| `Exception_Handling_Analysis_Output/analyzed_repositories.csv` | The analyzed (RQ1) set on which all results are reported: `nip_analyzer_output.csv` filtered to rows with a non-zero parser success rate (Table 3, "Successfully parsed"). | 16,876 |
+
 -----------------------------------------------------------------------------------------------------------------------
 ## Features
 -----------------------------------------------------------------------------------------------------------------------
 ### Core Capabilities
 -  **Multi-language support**: Analyzes 9 programming languages
 -  **AST-based parsing**: Language-specific Abstract Syntax Tree analysis
--  **HTTP library detection**: Identifies 50+ HTTP client libraries
+-  **HTTP library detection**: Identifies 70+ HTTP client libraries
 -  **Resilience pattern detection**: Identifies 6 advanced fault-handling patterns
 -  **Comprehensive logging**: System and process-level logging for debugging
 -  **Configurable execution**: INI-based configuration for easy customization
