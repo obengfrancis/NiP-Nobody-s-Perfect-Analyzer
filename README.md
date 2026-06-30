@@ -12,7 +12,7 @@
 # WebServFH aka Nobody's Perfect (NiP for short).
 -----------------------------------------------------------------------------------------------------------------------
 
-**WebServFH** is a Python-based static analysis tool designed to automatically detect and classify exception handling, detect HTTP library uasge, and detect resilience patterns in web service client repositories across nine programming languages.
+**WebServFH** is a Python-based static analysis tool designed to automatically detect and classify exception handling, detect HTTP library usage, and detect resilience patterns in web service client repositories across nine programming languages.
 
 > **Note:** In our research paper, this tool is referred to as **NiP** (Noboody's Perfect) for brevity.
 
@@ -46,7 +46,7 @@ correspond to the pipeline stages in Table 3.
 ### Core Capabilities
 -  **Multi-language support**: Analyzes 9 programming languages
 -  **AST-based parsing**: Language-specific Abstract Syntax Tree analysis
--  **HTTP library detection**: Identifies 70+ HTTP client libraries
+-  **HTTP library detection**: Identifies 73 (49 observed) HTTP client libraries
 -  **Resilience pattern detection**: Identifies 6 advanced fault-handling patterns
 -  **Comprehensive logging**: System and process-level logging for debugging
 -  **Configurable execution**: INI-based configuration for easy customization
@@ -58,19 +58,19 @@ correspond to the pipeline stages in Table 3.
 ## Supported Languages
 -----------------------------------------------------------------------------------------------------------------------
 
-WebServFH analyzes source code in the following languages:
+WebServFH (*NiP*) analyzes source code in the following languages:
 
 | Language | Parser | Version Required |
 |----------|--------|------------------|
 | **Python** | AST (built-in) | Python 3.10+ |
 | **Java** | JavaParser (JAR) | Java 11+ |
-| **JavaScript** | Esprima | Node.js 14+ |
+| **JavaScript** | Babel | Node.js 14+ |
 | **TypeScript** | TypeScript Compiler | TypeScript 4.0+ |
 | **C#** | Roslyn | .NET 6.0+ |
 | **Go** | go/parser | Go 1.16+ |
 | **Ruby** | parser gem | Ruby 2.7+ |
 | **Kotlin** | kotlinc | Kotlin 1.5+ |
-| **Swift** | SwiftSyntax | Swift 5.5+ |
+| **Swift** | SourceKitten | Swift 5.5+ |
 
 > ** Important:** All languages and their compilers/interpreters must be installed on the machine running WebServFH.
 
