@@ -1,11 +1,11 @@
-﻿Language,Repositories,None ,Basic,Mixed ,Advanced 
-Python,2399,659,1541,196,3
-Java,301,65,90,134,12
-JavaScript,6320,1031,1908,3075,306
-TypeScript,386,53,91,217,25
-Go,147,0,141,5,1
-C#,86,12,51,17,6
-Ruby,164,1,6,138,19
-Kotlin,146,10,6,78,52
-Swift,107,1,39,64,3
-Multiple,6820,798,1630,4229,163
+﻿Language,Repositories,None,Basic,Mixed,Advanced
+Python,1083,351,703,26,3
+Java,149,34,62,46,7
+JavaScript,2782,532,901,1191,158
+TypeScript,152,29,38,75,10
+Go,61,0,58,2,1
+C#,51,8,30,9,4
+Ruby,62,1,2,48,11
+Kotlin,82,8,4,38,32
+Swift,69,1,25,40,3
+Multiple,2813,383,677,1667,86

@@ -1,0 +1,5 @@
+pattern,repositories,percent
+Timeout,2859,91.0
+Retry,1280,40.7
+Circuit Breaker,686,21.8
+Backoff,177,5.6

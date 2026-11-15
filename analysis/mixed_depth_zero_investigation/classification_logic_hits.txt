@@ -1,0 +1,1328 @@
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:6
+     3: This document is part of the replication package.
+     4: It specifies the **operational rules** used by NiP to:
+     5: 
+     6: 1. classify each repository into one of four categories (**None**, **Basic**, **Advanced**, **Mixed**), and
+     7: 2. emit per-pattern indicator flags (**try_catch**, **status_check**, **timeout**, **retry**, **exponential_backoff**, **circuit_breaker**).
+     8: 
+     9: NiP is a multi-language analyzer. The main driver (Python) orchestrates cloning, file selection, and per-language analysis. Each language analyzer reports file-level detections; NiP aggregates them to a repository label and a CSV row.
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:7
+     4: It specifies the **operational rules** used by NiP to:
+     5: 
+     6: 1. classify each repository into one of four categories (**None**, **Basic**, **Advanced**, **Mixed**), and
+     7: 2. emit per-pattern indicator flags (**try_catch**, **status_check**, **timeout**, **retry**, **exponential_backoff**, **circuit_breaker**).
+     8: 
+     9: NiP is a multi-language analyzer. The main driver (Python) orchestrates cloning, file selection, and per-language analysis. Each language analyzer reports file-level detections; NiP aggregates them to a repository label and a CSV row.
+    10: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:21
+    18: - **None**   : no basic or advanced signals detected
+    19: - **Basic**  : at least one **basic** signal detected and no **advanced** signal detected
+    20: - **Advanced**: at least one **advanced** signal detected and no **basic** signal detected
+    21: - **Mixed**  : both basic and advanced signals detected, irrespective of proportion.
+    22: 
+    23: Notes:
+    24: - In practice, some ecosystems commonly combine basic handlers with advanced mechanisms; therefore **Mixed** is expected to occur frequently.
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:24
+    21: - **Mixed**  : both basic and advanced signals detected, irrespective of proportion.
+    22: 
+    23: Notes:
+    24: - In practice, some ecosystems commonly combine basic handlers with advanced mechanisms; therefore **Mixed** is expected to occur frequently.
+    25: - Some per-language parsers may choose to categorize at the file level differently (e.g., treat any advanced detection as Advanced even when try/catch exists). If so, the parser must still emit the canonical flags above; NiP's repository aggregation remains consistent.
+    26: 
+    27: ### 1.2 Repository-level classification (aggregation)
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:33
+    30: - Initialize `repo_label = None`.
+    31: - For each file label `file_label`:
+    32:   - If `repo_label` is `None`, set `repo_label = file_label`.
+    33:   - If `repo_label` is `Basic` and `file_label` is `Advanced`, set `repo_label = Mixed`.
+    34:   - If `repo_label` is `Advanced` and `file_label` is `Basic`, set `repo_label = Mixed`.
+    35:   - Otherwise keep the current `repo_label`.
+    36: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:34
+    31: - For each file label `file_label`:
+    32:   - If `repo_label` is `None`, set `repo_label = file_label`.
+    33:   - If `repo_label` is `Basic` and `file_label` is `Advanced`, set `repo_label = Mixed`.
+    34:   - If `repo_label` is `Advanced` and `file_label` is `Basic`, set `repo_label = Mixed`.
+    35:   - Otherwise keep the current `repo_label`.
+    36: 
+    37: NiP also aggregates pattern flags by counting how many files in the repository triggered each flag.
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md:203
+   200: **Advanced signals (expected)**
+   201: - `timeout`: explicit timeout configuration, e.g., `axios({ timeout: ... })`, `AbortController` timeouts, client config fields containing `timeout`
+   202: - `retry`: explicit retry logic or retry libraries (e.g., library/module names containing `retry`, `axios-retry`, `promise-retry`), or loops that re-issue requests under failure
+   203: - `exponential_backoff`: identifiers containing `backoff` / `exponential` combined with delayed retry (`setTimeout`, `sleep` polyfills)
+   204: - `circuit_breaker`: circuit breaker libraries (e.g., `opossum`) or identifiers containing `circuit` in breaker context
+   205: 
+   206: The authoritative implementation is the parser code in `parse_javascript.js`.
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_typescript.js:44
+    41:         // Resilience library detection (TypeScript + JavaScript)
+    42:         const RESILIENCE_LIBRARIES = {
+    43:             // TypeScript-first libraries
+    44:             'cockatiel': { patterns: ['retry', 'circuit_breaker', 'timeout'], type: 'multi' },
+    45:             'ts-retry': { patterns: ['retry'], type: 'retry' },
+    46:             'ts-retry-promise': { patterns: ['retry'], type: 'retry' },
+    47:             
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_typescript.js:71
+    68:             'timeout-abort-controller': { patterns: ['timeout'], type: 'timeout' },
+    69:             
+    70:             // Multi-purpose libraries
+    71:             'bluebird': { patterns: ['timeout', 'retry'], type: 'multi' },
+    72:             'async': { patterns: ['retry'], type: 'multi' },
+    73:             'got': { patterns: ['retry', 'timeout'], type: 'http_client' },
+    74:             'axios': { patterns: ['timeout'], type: 'http_client' },
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_typescript.js:73
+    70:             // Multi-purpose libraries
+    71:             'bluebird': { patterns: ['timeout', 'retry'], type: 'multi' },
+    72:             'async': { patterns: ['retry'], type: 'multi' },
+    73:             'got': { patterns: ['retry', 'timeout'], type: 'http_client' },
+    74:             'axios': { patterns: ['timeout'], type: 'http_client' },
+    75:             
+    76:             // RxJS resilience operators
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_typescript.js:77
+    74:             'axios': { patterns: ['timeout'], type: 'http_client' },
+    75:             
+    76:             // RxJS resilience operators
+    77:             'rxjs': { patterns: ['retry', 'timeout'], type: 'reactive' },
+    78:             'rxjs/operators': { patterns: ['retry', 'timeout'], type: 'reactive' }
+    79:         };
+    80: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_typescript.js:78
+    75:             
+    76:             // RxJS resilience operators
+    77:             'rxjs': { patterns: ['retry', 'timeout'], type: 'reactive' },
+    78:             'rxjs/operators': { patterns: ['retry', 'timeout'], type: 'reactive' }
+    79:         };
+    80: 
+    81:         // Analyze imports
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_javascript_comprehensive.js:108
+   105:         } catch (error) {
+   106:             retries--;
+   107:             if (retries > 0) {
+   108:                 await new Promise(resolve => setTimeout(resolve, backoff));
+   109:                 backoff *= 2;  // ← Exponential backoff
+   110:             } else {
+   111:                 throw error;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_swift.py:19
+    16: 
+    17: RESILIENCE_LIBRARIES = {
+    18:     # HTTP Clients
+    19:     'Alamofire': {'patterns': ['timeout', 'retry'], 'type': 'http_client'},
+    20:     'Moya': {'patterns': ['timeout'], 'type': 'http_client'},
+    21:     'AFNetworking': {'patterns': ['timeout'], 'type': 'http_client'},
+    22:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_swift.py:24
+    21:     'AFNetworking': {'patterns': ['timeout'], 'type': 'http_client'},
+    22:     
+    23:     # Async/Promise Libraries
+    24:     'PromiseKit': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    25:     'Combine': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    26:     'RxSwift': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    27:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_swift.py:25
+    22:     
+    23:     # Async/Promise Libraries
+    24:     'PromiseKit': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    25:     'Combine': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    26:     'RxSwift': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    27:     
+    28:     # Retry Libraries
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_swift.py:26
+    23:     # Async/Promise Libraries
+    24:     'PromiseKit': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    25:     'Combine': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    26:     'RxSwift': {'patterns': ['retry', 'timeout'], 'type': 'async'},
+    27:     
+    28:     # Retry Libraries
+    29:     'Retry': {'patterns': ['retry', 'exponential_backoff'], 'type': 'retry'},
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/cs_exception_patterns.cs:20
+    17:             InitializeComponent();
+    18:             ViewModel = new PlaylistsViewModel(new PageService());
+    19:             _httpClient = new HttpClient();
+    20:             _circuitBreaker = new CircuitBreaker(3, TimeSpan.FromSeconds(10)); // 3 failures, 10-second reset timeout
+    21:         }
+    22: 
+    23:         protected override async void OnAppearing()
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/cs_exception_patterns.cs:57
+    54:             }
+    55:         }
+    56: 
+    57:         // Advanced: Retry with exponential backoff
+    58:         private async Task PerformNetworkRequestWithRetriesAsync()
+    59:         {
+    60:             int retries = 3;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/cs_exception_patterns.cs:88
+    85:             }
+    86:         }
+    87: 
+    88:         // Advanced: Timeout mechanism
+    89:         private async Task PerformWithTimeoutAsync(Func<Task> operation, TimeSpan timeout)
+    90:         {
+    91:             using (var cts = new System.Threading.CancellationTokenSource(timeout))
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/cs_exception_patterns.cs:108
+   105:         }
+   106:     }
+   107: 
+   108:     // Advanced: Circuit breaker mechanism
+   109:     public class CircuitBreaker
+   110:     {
+   111:         private int _failureCount = 0;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/cs_exception_patterns.cs:116
+   113:         private readonly TimeSpan _resetTimeout;
+   114:         private DateTime _lastFailureTime;
+   115: 
+   116:         public CircuitBreaker(int failureThreshold, TimeSpan resetTimeout)
+   117:         {
+   118:             _failureThreshold = failureThreshold;
+   119:             _resetTimeout = resetTimeout;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:25
+    22: 
+    23: WebServFH performs comprehensive analysis of exception handling strategies in web service clients by:
+    24: - **Parsing source code** using language-specific Abstract Syntax Tree (AST) parsers
+    25: - **Classifying repositories** into four categories: None, Basic, Mixed, and Advanced
+    26: - **Identifying HTTP library usage** across 9 programming languages
+    27: - **Detecting resilience patterns** including timeouts, retries, circuit breakers, exponential backoff, and status checks
+    28: - **Generating detailed reports** with pattern prevalence and adoption metrics
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:27
+    24: - **Parsing source code** using language-specific Abstract Syntax Tree (AST) parsers
+    25: - **Classifying repositories** into four categories: None, Basic, Mixed, and Advanced
+    26: - **Identifying HTTP library usage** across 9 programming languages
+    27: - **Detecting resilience patterns** including timeouts, retries, circuit breakers, exponential backoff, and status checks
+    28: - **Generating detailed reports** with pattern prevalence and adoption metrics
+    29: 
+    30: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:40
+    37: |------|----------|------|
+    38: | `input_csv_file.csv` | The repository URL list submitted to NiP — the mined set (Table 3, "Mined URLs"). **This is the file NiP consumes as input** (see [Usage/Running](#usagerunning)); kept under this name so the documented run command works unchanged. | 19,231 |
+    39: | `mined_repositories.csv` | Identical copy of `input_csv_file.csv` under a self-describing name, so the mined set and its URLs can be located directly. | 19,231 |
+    40: | `Exception_Handling_Analysis_Output/nip_analyzer_output.csv` | NiP's full per-repository results — one row per cloned repository, with strategy category (None/Basic/Mixed/Advanced), detected language(s), HTTP libraries, the six resilience-pattern flags, and parser success rate. | 17,410 |
+    41: | `Exception_Handling_Analysis_Output/analyzed_repositories.csv` | The analyzed (RQ1) set on which all results are reported: `nip_analyzer_output.csv` filtered to rows with a non-zero parser success rate (Table 3, "Successfully parsed"). | 16,876 |
+    42: 
+    43: -----------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:87
+    84: |----------|-----------|-------------------|
+    85: | **None** | No exception handling detected | No try-catch, no patterns |
+    86: | **Basic** | Only try-catch and/or status checks | Try-catch, HTTP status checks |
+    87: | **Advanced** | Advanced patterns only (no try-catch) | Timeout, Retry, Circuit Breaker, Backoff |
+    88: | **Mixed** | Both basic and advanced patterns | Try-catch/or status checks + any advanced pattern |
+    89: 
+    90: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:88
+    85: | **None** | No exception handling detected | No try-catch, no patterns |
+    86: | **Basic** | Only try-catch and/or status checks | Try-catch, HTTP status checks |
+    87: | **Advanced** | Advanced patterns only (no try-catch) | Timeout, Retry, Circuit Breaker, Backoff |
+    88: | **Mixed** | Both basic and advanced patterns | Try-catch/or status checks + any advanced pattern |
+    89: 
+    90: 
+    91: -----------------------------------------------------------------------------------------------------------------------
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:102
+    99: 
+   100: | Library | Detection Method | Common Patterns |
+   101: |---------|-----------------|-----------------|
+   102: | **requests** | `import requests` | Retry adapters, timeout parameters |
+   103: | **httpx** | `import httpx` | Async/await, built-in retries |
+   104: | **aiohttp** | `import aiohttp` | Async sessions, timeout configs |
+   105: | **urllib3** | `import urllib3` | Retry strategies, timeout |
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:105
+   102: | **requests** | `import requests` | Retry adapters, timeout parameters |
+   103: | **httpx** | `import httpx` | Async/await, built-in retries |
+   104: | **aiohttp** | `import aiohttp` | Async sessions, timeout configs |
+   105: | **urllib3** | `import urllib3` | Retry strategies, timeout |
+   106: | **http.client** | `import http.client` | Standard library HTTP |
+   107: | **tornado** | `import tornado.httpclient` | Async HTTP client |
+   108: | **treq** | `import treq` | Twisted-based HTTP |
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:120
+   117: |---------|-----------------|-----------------|
+   118: | **HttpClient (Java 11+)** | `java.net.http.HttpClient` | Built-in timeout, async |
+   119: | **OkHttp** | `okhttp3.OkHttpClient` | Interceptors, retry |
+   120: | **Apache HttpClient** | `org.apache.http.client` | Retry handlers, timeout |
+   121: | **RestTemplate** | `org.springframework.web.client.RestTemplate` | Spring integration |
+   122: | **WebClient** | `org.springframework.web.reactive.function.client.WebClient` | Reactive, retry |
+   123: | **Retrofit** | `retrofit2.Retrofit` | Annotation-based |
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md:249
+   246: |--------|-------------|
+   247: | `repo_url` | GitHub repository URL |
+   248: | `Languages` | Detected programming language(s) |
+   249: | `Exception Type` | Classification (None/Basic/Mixed/Advanced) |
+   250: | `HTTP_Libraries` | Detected HTTP client libraries (comma-separated) |
+   251: | `Has Try-Catch` | Boolean: Try-catch blocks detected |
+   252: | `Has Timeout` | Boolean: Timeout pattern detected |
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_analyzer.sh:21
+    18: echo "JAR found at: $JAR_PATH"
+    19: echo ""
+    20: 
+    21: # Test 1: Mixed (Both Basic and Advanced)
+    22: echo "TEST 1: Mixed Pattern (Both Basic + Advanced)"
+    23: echo "Expected: hasBasicHandling=true, hasAdvancedHandling=true"
+    24: echo "File: test_file.java"
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_analyzer.sh:22
+    19: echo ""
+    20: 
+    21: # Test 1: Mixed (Both Basic and Advanced)
+    22: echo "TEST 1: Mixed Pattern (Both Basic + Advanced)"
+    23: echo "Expected: hasBasicHandling=true, hasAdvancedHandling=true"
+    24: echo "File: test_file.java"
+    25: echo "---"
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_analyzer.sh:53
+    50: echo "============================================"
+    51: echo ""
+    52: echo "VERIFICATION CHECKLIST:"
+    53: echo "  [ ] Test 1 shows hasAdvancedHandling: true (detects @Retry annotation)"
+    54: echo "  [ ] Test 1 shows hasBasicHandling: true (detects try-catch)"
+    55: echo "  [ ] Test 1 includes 'resilience_libraries': ['Resilience4j']"
+    56: echo "  [ ] Test 1 shows patterns with retry: true, try_catch: true"
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_swift_comprehensive.swift:28
+    25:     }
+    26: }
+    27: 
+    28: // ENHANCEMENT 3: Alamofire with timeout and retry
+    29: class AlamofireExample {
+    30:     func fetchUser(id: String) {
+    31:         AF.request("https://api.example.com/users/\(id)")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_swift_comprehensive.swift:98
+    95:     }
+    96: }
+    97: 
+    98: // ENHANCEMENT 6: PromiseKit with retry and timeout
+    99: class PromiseKitExample {
+   100:     func fetchWithRetry(url: String) -> Promise<Data> {
+   101:         return firstly {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_swift_comprehensive.swift:118
+   115:     }
+   116: }
+   117: 
+   118: // ENHANCEMENT 7: Combine with timeout and retry
+   119: class CombineExample {
+   120:     var cancellables = Set<AnyCancellable>()
+   121:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/test_kotlin_comprehensive.kt:136
+   133:     }
+   134: }
+   135: 
+   136: // ENHANCEMENT 7: Ktor Client with timeout and retry
+   137: class KtorClientExample {
+   138:     private val client = HttpClient(CIO) {
+   139:         install(HttpTimeout) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_php.js:55
+    52:                 if (functionName === 'curl_getinfo') {
+    53:                     hasBasicHandling = true;
+    54:                 }
+    55:                 if (['timeout', 'retry', 'CircuitBreaker', 'backoff'].includes(functionName)) {
+    56:                     hasAdvancedHandling = true;
+    57:                 }
+    58:             }
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_ruby.rb:33
+    30:   'semian' => { patterns: ['circuit_breaker'], type: 'circuit_breaker' },
+    31:   'stoplight' => { patterns: ['circuit_breaker'], type: 'circuit_breaker' },
+    32:   'faraday-retry' => { patterns: ['retry'], type: 'retry' },
+    33:   'faraday' => { patterns: ['timeout', 'retry'], type: 'http_client' },
+    34:   'httparty' => { patterns: ['timeout'], type: 'http_client' },
+    35:   'typhoeus' => { patterns: ['timeout', 'retry'], type: 'http_client' },
+    36:   'rest-client' => { patterns: ['timeout'], type: 'http_client' },
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_ruby.rb:35
+    32:   'faraday-retry' => { patterns: ['retry'], type: 'retry' },
+    33:   'faraday' => { patterns: ['timeout', 'retry'], type: 'http_client' },
+    34:   'httparty' => { patterns: ['timeout'], type: 'http_client' },
+    35:   'typhoeus' => { patterns: ['timeout', 'retry'], type: 'http_client' },
+    36:   'rest-client' => { patterns: ['timeout'], type: 'http_client' },
+    37:   'net/http' => { patterns: [], type: 'http_client' },
+    38:   'timeout' => { patterns: ['timeout'], type: 'timeout' }
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_ruby.rb:210
+   207:     end
+   208:   end
+   209: 
+   210:   # Analyze blocks (for retryable, Timeout.timeout, etc.)
+   211:   def analyze_block(node)
+   212:     # Check if this is a block call
+   213:     send_node = node.children[0]
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:3
+     1: #!/usr/bin/env python3
+     2: """
+     3: Investigate why repositories classified as Mixed may have advanced-pattern depth 0.
+     4: 
+     5: Run from the NiP project root:
+     6: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:31
+    28: from typing import Dict, List, Optional, Sequence, Tuple
+    29: 
+    30: CATEGORY_CANDIDATES = [
+    31:     "category", "strategy_category", "strategy", "exception_type",
+    32:     "exception_category", "handling_category", "fault_handling_category",
+    33:     "repo_category", "repository_category", "classification", "label",
+    34: ]
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:166
+   163:     score = (10 if cat else 0) + (2 if repo else 0) + 4 * n_patterns
+   164:     if any(t in norm(path.name) for t in ["output", "result", "analysis", "repo", "exception"]):
+   165:         score += 2
+   166:     return score, {"category_column": cat, "repo_column": repo, "advanced_columns": pattern_map}
+   167: 
+   168: 
+   169: def load_csv_rows(path: Path):
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:203
+   200:     result = {
+   201:         "path": str(path), "encoding": enc, "row_count": len(rows),
+   202:         "category_column": cat_col, "repo_column": repo_col,
+   203:         "advanced_columns": adv_cols, "category_counts": {},
+   204:         "mixed_count": 0, "mixed_depth_distribution": {},
+   205:         "mixed_depth_zero_count": 0, "mixed_unknown_depth_count": 0,
+   206:         "anomalies": {},
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:228
+   225: 
+   226:         depth = len([m for m, v in signals.items() if v is True]) if all(signals[m] is not None for m in ADVANCED_PATTERNS) else None
+   227: 
+   228:         if category == "mixed":
+   229:             mixed_count += 1
+   230:             if depth is None:
+   231:                 unknown_depth_rows.append((idx, row, signals, detail))
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:238
+   235:                     depth0_rows.append((idx, row, signals, detail))
+   236: 
+   237:         if depth is not None:
+   238:             if category == "mixed" and depth == 0:
+   239:                 anomaly_counter["mixed_with_zero_advanced"] += 1
+   240:             if category == "advanced" and depth == 0:
+   241:                 anomaly_counter["advanced_with_zero_advanced"] += 1
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:239
+   236: 
+   237:         if depth is not None:
+   238:             if category == "mixed" and depth == 0:
+   239:                 anomaly_counter["mixed_with_zero_advanced"] += 1
+   240:             if category == "advanced" and depth == 0:
+   241:                 anomaly_counter["advanced_with_zero_advanced"] += 1
+   242:             if category == "basic" and depth > 0:
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:240
+   237:         if depth is not None:
+   238:             if category == "mixed" and depth == 0:
+   239:                 anomaly_counter["mixed_with_zero_advanced"] += 1
+   240:             if category == "advanced" and depth == 0:
+   241:                 anomaly_counter["advanced_with_zero_advanced"] += 1
+   242:             if category == "basic" and depth > 0:
+   243:                 anomaly_counter["basic_with_advanced_signal"] += 1
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:257
+   254:     depth0_path = outdir / f"{safe_name}__mixed_depth0.csv"
+   255:     extra_cols = [
+   256:         "__source_csv", "__source_line", "__category_column", "__category_value", "__repo_id",
+   257:         "__timeout_present", "__retry_present", "__backoff_present", "__circuit_breaker_present",
+   258:         "__matched_signal_columns",
+   259:     ]
+   260:     with depth0_path.open("w", encoding="utf-8", newline="") as f:
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:272
+   269:                 "__source_csv": str(path), "__source_line": idx,
+   270:                 "__category_column": cat_col, "__category_value": row.get(cat_col, ""),
+   271:                 "__repo_id": row.get(repo_col, "") if repo_col else "",
+   272:                 "__timeout_present": signals["timeout"], "__retry_present": signals["retry"],
+   273:                 "__backoff_present": signals["backoff"], "__circuit_breaker_present": signals["circuit_breaker"],
+   274:                 "__matched_signal_columns": json.dumps(matched, ensure_ascii=False),
+   275:             }
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:306
+   303:         for i, line in enumerate(lines, start=1):
+   304:             n = line.lower()
+   305:             logicish = (
+   306:                 ("mixed" in n and ("advanced" in n or "basic" in n))
+   307:                 or ("category" in n and ("mixed" in n or "advanced" in n))
+   308:                 or "exception_type" in n
+   309:                 or "strategy_category" in n
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:307
+   304:             n = line.lower()
+   305:             logicish = (
+   306:                 ("mixed" in n and ("advanced" in n or "basic" in n))
+   307:                 or ("category" in n and ("mixed" in n or "advanced" in n))
+   308:                 or "exception_type" in n
+   309:                 or "strategy_category" in n
+   310:                 or ("timeout" in n and ("retry" in n or "backoff" in n or "circuit" in n))
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:308
+   305:             logicish = (
+   306:                 ("mixed" in n and ("advanced" in n or "basic" in n))
+   307:                 or ("category" in n and ("mixed" in n or "advanced" in n))
+   308:                 or "exception_type" in n
+   309:                 or "strategy_category" in n
+   310:                 or ("timeout" in n and ("retry" in n or "backoff" in n or "circuit" in n))
+   311:                 or ("advanced" in n and ("timeout" in n or "retry" in n or "backoff" in n or "circuit" in n))
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:309
+   306:                 ("mixed" in n and ("advanced" in n or "basic" in n))
+   307:                 or ("category" in n and ("mixed" in n or "advanced" in n))
+   308:                 or "exception_type" in n
+   309:                 or "strategy_category" in n
+   310:                 or ("timeout" in n and ("retry" in n or "backoff" in n or "circuit" in n))
+   311:                 or ("advanced" in n and ("timeout" in n or "retry" in n or "backoff" in n or "circuit" in n))
+   312:             )
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:310
+   307:                 or ("category" in n and ("mixed" in n or "advanced" in n))
+   308:                 or "exception_type" in n
+   309:                 or "strategy_category" in n
+   310:                 or ("timeout" in n and ("retry" in n or "backoff" in n or "circuit" in n))
+   311:                 or ("advanced" in n and ("timeout" in n or "retry" in n or "backoff" in n or "circuit" in n))
+   312:             )
+   313:             if logicish:
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:311
+   308:                 or "exception_type" in n
+   309:                 or "strategy_category" in n
+   310:                 or ("timeout" in n and ("retry" in n or "backoff" in n or "circuit" in n))
+   311:                 or ("advanced" in n and ("timeout" in n or "retry" in n or "backoff" in n or "circuit" in n))
+   312:             )
+   313:             if logicish:
+   314:                 start, end = max(1, i - 3), min(len(lines), i + 3)
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:328
+   325: 
+   326: 
+   327: def main() -> int:
+   328:     ap = argparse.ArgumentParser(description="Investigate Mixed repositories with advanced-pattern depth 0.")
+   329:     ap.add_argument("--root", default=".", help="Project root (default: current directory)")
+   330:     ap.add_argument("--csv", action="append", default=[], help="Specific CSV to inspect; may be supplied multiple times")
+   331:     ap.add_argument("--show", type=int, default=20, help="Number of depth-0 examples to print per CSV")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:397
+   394:         except Exception as e:
+   395:             print(f"\n[error] failed analyzing {p}: {e}", file=sys.stderr)
+   396: 
+   397:     print("\nSearching source files for category-aggregation and advanced-signal logic...")
+   398:     logic_hits = search_source_logic(root, outdir)
+   399:     print(f"Found {len(logic_hits)} likely source/documentation hits.")
+   400:     print(f"Saved contexts to: {outdir / 'classification_logic_hits.txt'}")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py:444
+   441:     print(f"\nFull JSON summary: {report_path}")
+   442:     print("\nUseful follow-up commands:")
+   443:     print("  grep -RniE 'depth|within.?mixed|61\\.9|1\\.6' analysis . --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=target")
+   444:     print("  grep -RniE 'Mixed|Advanced|timeout|retry|backoff|circuit' WebServFH.py analysis --exclude-dir=.git 2>/dev/null | head -n 200")
+   445:     return 0
+   446: 
+   447: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_javascript.js:84
+    81:   // Circuit breaker libraries
+    82:   opossum: { patterns: ["circuit_breaker"], type: "circuit_breaker" },
+    83:   cockatiel: {
+    84:     patterns: ["retry", "circuit_breaker", "timeout"],
+    85:     type: "multi",
+    86:   },
+    87:   brakes: { patterns: ["circuit_breaker"], type: "circuit_breaker" },
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_javascript.js:101
+    98:   "timeout-abort-controller": { patterns: ["timeout"], type: "timeout" },
+    99: 
+   100:   // Multi-purpose libraries
+   101:   bluebird: { patterns: ["timeout", "retry"], type: "multi" },
+   102:   async: { patterns: ["retry"], type: "multi" },
+   103:   got: { patterns: ["retry", "timeout"], type: "http_client" },
+   104:   axios: { patterns: ["timeout"], type: "http_client" },
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_javascript.js:103
+   100:   // Multi-purpose libraries
+   101:   bluebird: { patterns: ["timeout", "retry"], type: "multi" },
+   102:   async: { patterns: ["retry"], type: "multi" },
+   103:   got: { patterns: ["retry", "timeout"], type: "http_client" },
+   104:   axios: { patterns: ["timeout"], type: "http_client" },
+   105: };
+   106: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/ParseKotlin.kt:25
+    22:     "com.squareup.okhttp3" to mapOf("patterns" to listOf("timeout"), "type" to "http_client"),
+    23:     "retrofit2" to mapOf("patterns" to listOf("timeout"), "type" to "http_client"),
+    24:     "com.squareup.retrofit2" to mapOf("patterns" to listOf("timeout"), "type" to "http_client"),
+    25:     "io.ktor.client" to mapOf("patterns" to listOf("timeout", "retry"), "type" to "http_client"),
+    26:     "com.github.kittinunf.fuel" to mapOf("patterns" to listOf("timeout"), "type" to "http_client"),
+    27:     
+    28:     // Resilience4j
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/ParseKotlin.kt:29
+    26:     "com.github.kittinunf.fuel" to mapOf("patterns" to listOf("timeout"), "type" to "http_client"),
+    27:     
+    28:     // Resilience4j
+    29:     "io.github.resilience4j" to mapOf("patterns" to listOf("retry", "circuit_breaker", "timeout"), "type" to "resilience"),
+    30:     "io.github.resilience4j.retry" to mapOf("patterns" to listOf("retry"), "type" to "retry"),
+    31:     "io.github.resilience4j.circuitbreaker" to mapOf("patterns" to listOf("circuit_breaker"), "type" to "circuit_breaker"),
+    32:     "io.github.resilience4j.kotlin" to mapOf("patterns" to listOf("retry", "circuit_breaker"), "type" to "resilience"),
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:81
+    78: # error_handling_type values:
+    79: # - "None" (no handling detected)
+    80: # - "Basic" (try-catch/basic error handling)
+    81: # - "Advanced" (retry, timeout, circuit breaker)
+    82: # - "Mixed" (both basic and advanced)
+    83: 
+    84: # patterns dict structure:
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:82
+    79: # - "None" (no handling detected)
+    80: # - "Basic" (try-catch/basic error handling)
+    81: # - "Advanced" (retry, timeout, circuit breaker)
+    82: # - "Mixed" (both basic and advanced)
+    83: 
+    84: # patterns dict structure:
+    85: {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:108
+   105: 
+   106: **Step 6: Human Textual Recommendation Generation (It is not a recommender system)**
+   107: ```python
+   108: Mixed      → "The codebase has basic and advanced exception handling."
+   109: Advanced   → "The codebase has advanced exception handling."
+   110: Basic      → "Basic exception handling detected. Consider enhancements."
+   111: None       → "No exception handling detected. Consider adding exception handling."
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:119
+   116: **CSV Columns**:
+   117: ```
+   118: repo_url, Exception Type, Recommendation, Languages, HTTP Libraries, 
+   119: Parser Success Rate, Has Try-Catch, Has Timeout, Has Retry, 
+   120: Has Circuit Breaker, Has Backoff, Has Status Check
+   121: ```
+   122: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:138
+   135: - Detects imports: `tenacity`, `pybreaker`, `backoff`, `retry`, `circuit_breaker`
+   136: - Visitor pattern for:
+   137:   - `Try/ExceptHandler` nodes → try_catch
+   138:   - Function calls: `timeout()`, `retry()`, `circuitbreaker()`
+   139:   - Method calls: `.retry()`, `.timeout()`, `.with_backoff()`
+   140:   - Decorators: `@retry`, `@timeout`, `@circuitbreaker`
+   141:   - Context managers: `with timeout():`
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:139
+   136: - Visitor pattern for:
+   137:   - `Try/ExceptHandler` nodes → try_catch
+   138:   - Function calls: `timeout()`, `retry()`, `circuitbreaker()`
+   139:   - Method calls: `.retry()`, `.timeout()`, `.with_backoff()`
+   140:   - Decorators: `@retry`, `@timeout`, `@circuitbreaker`
+   141:   - Context managers: `with timeout():`
+   142: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:140
+   137:   - `Try/ExceptHandler` nodes → try_catch
+   138:   - Function calls: `timeout()`, `retry()`, `circuitbreaker()`
+   139:   - Method calls: `.retry()`, `.timeout()`, `.with_backoff()`
+   140:   - Decorators: `@retry`, `@timeout`, `@circuitbreaker`
+   141:   - Context managers: `with timeout():`
+   142: 
+   143: **Error Handling**: SyntaxError recovery logs and returns `("None", [])`
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md:453
+   450: 
+   451: ```csv
+   452: repo_url,Exception Type,Recommendation,Languages,HTTP Libraries,Parser Success Rate,
+   453: Has Try-Catch,Has Timeout,Has Retry,Has Circuit Breaker,Has Backoff,Has Status Check
+   454: ```
+   455: 
+   456: ### 10.2 Example Output Row
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py:746
+   743:                 if attr_name in {"status_code", "raise_for_status"}:
+   744:                     self.has_basic_handling = True
+   745:                     self.patterns["status_check"] = True
+   746:                 # Method-based retry/timeout patterns (advanced)
+   747:                 elif attr_name in {"retry", "with_retry"}:
+   748:                     self.has_advanced_handling = True
+   749:                     self.patterns["retry"] = True
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py:760
+   757:             self.generic_visit(node)
+   758: 
+   759:         def visit_With(self, node):
+   760:             """Detect context managers for timeout/retry"""
+   761:             for item in node.items:
+   762:                 if isinstance(item.context_expr, ast.Call):
+   763:                     if isinstance(item.context_expr.func, ast.Name):
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py:980
+   977:     # Decide what “advanced” means
+   978:     # Option A (stricter): only pattern usage
+   979:     has_advanced = any(
+   980:         patterns[k] for k in ["retry", "circuit_breaker", "timeout", "exponential_backoff"]
+   981:     )
+   982: 
+   983:     return has_advanced, patterns, libraries_found
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py:1778
+  1775: 
+  1776: # Repository cloning
+  1777: #@functools.lru_cache(maxsize=128)
+  1778: def clone_repo(repo_url, clone_path, retries=2, delay=5, backoff_factor=2, timeout=120):
+  1779:     """
+  1780:     Clone a repository with timeout and retry logic.
+  1781:     """
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py:1780
+  1777: #@functools.lru_cache(maxsize=128)
+  1778: def clone_repo(repo_url, clone_path, retries=2, delay=5, backoff_factor=2, timeout=120):
+  1779:     """
+  1780:     Clone a repository with timeout and retry logic.
+  1781:     """
+  1782:     start_time = time.time()
+  1783:     attempt = 0
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py:2039
+  2036:         logging.info(f"Processing repository {repo_url}...")
+  2037:         logging.debug(f"Clone path: {clone_path}")
+  2038:         
+  2039:         if clone_repo(repo_url, clone_path, retries=2, delay=5, backoff_factor=2, timeout=120):
+  2040:             if not os.listdir(clone_path):
+  2041:                 logging.error(f"Clone repository {clone_path} is empty")
+  2042:                 return None
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-13-40-420.md:79
+    76:         @Override
+    77:         public void visit(MethodCallExpr n, Void arg) {
+    78:             String methodName = n.getNameAsString().toLowerCase();
+    79:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    80:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    81:                 hasAdvancedHandling = true;
+    82:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-14-35-160.md:78
+    75:         @Override
+    76:         public void visit(MethodCallExpr n, Void arg) {
+    77:             String methodName = n.getNameAsString().toLowerCase();
+    78:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    79:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    80:                 hasAdvancedHandling = true;
+    81:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-13-22-554.md:79
+    76:         @Override
+    77:         public void visit(MethodCallExpr n, Void arg) {
+    78:             String methodName = n.getNameAsString@@().toLowerCase();
+    79:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    80:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    81:                 hasAdvancedHandling = true;
+    82:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-13-43-763.md:79
+    76:         @Override
+    77:         public void visit(MethodCallExpr n, Void arg) {
+    78:             String methodName = n.getNameAsString().toLowerCase();
+    79:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    80:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    81:                 hasAdvancedHandling = true;
+    82:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-13-40-957.md:79
+    76:         @Override
+    77:         public void visit(MethodCallExpr n, Void arg) {
+    78:             String methodName = n.getNameAsString().toLowerCase();
+    79:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    80:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    81:                 hasAdvancedHandling = true;
+    82:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-14-20-702.md:78
+    75:         @Override
+    76:         public void visit(MethodCallExpr n, Void arg) {
+    77:             String methodName = n.getNameAsString().toLowerCase();
+    78:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    79:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    80:                 hasAdvancedHandling = true;
+    81:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-13-25-549.md:79
+    76:         @Override
+    77:         public void visit(MethodCallExpr n, Void arg) {
+    78:             String methodName = n.getNameAsString().toLowerCase();
+    79:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    80:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    81:                 hasAdvancedHandling = true;
+    82:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/.metals/.reports/metals-full/2024-11-23/r_compiler-error_23-14-31-111.md:78
+    75:         @Override
+    76:         public void visit(MethodCallExpr n, Void arg) {
+    77:             String methodName = n.getNameAsString().toLowerCase();
+    78:             if (methodName.equals("timeout") || methodName.equals("retry") || 
+    79:                 methodName.equals("circuitbreaker") || methodName.equals("backoff")) {
+    80:                 hasAdvancedHandling = true;
+    81:             } else if (methodName.equals("statuscode")) {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/language_chi_square_results.txt:5
+     2: EXCEPTION HANDLING DISTRIBUTION BY LANGUAGE (FROM RAW COUNTS)
+     3: =====================================================================================
+     4: 
+     5: Language       Repos    None%   Basic%   Mixed%     Adv%
+     6: -------------------------------------------------------------------------------------
+     7: Python         2,399    27.5%    64.2%     8.2%     0.1%
+     8: Java             301    21.6%    29.9%    44.5%     4.0%
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:41
+    38:     return df, valid_df, failed_df
+    39: 
+    40: 
+    41: def analyze_exception_types(valid_df, failed_df):
+    42:     """Analyze exception types with corrected percentage rounding"""
+    43:     print("\n" + "="*70)
+    44:     print("EXCEPTION HANDLING DISTRIBUTION ANALYSIS")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:48
+    45:     print("="*70)
+    46:     
+    47:     # Define categories and their order
+    48:     categories = ['None', 'Basic', 'Mixed', 'Advanced']
+    49:     
+    50:     # Make Exception Type categorical with defined order
+    51:     valid_df['Exception Type'] = pd.Categorical(
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:127
+   124:     
+   125:     advanced_count = int(exception_counts['Advanced'])
+   126:     mixed_count = int(exception_counts['Mixed'])
+   127:     advanced_mixed = advanced_count + mixed_count
+   128:     
+   129:     print(f"\n✓ Repositories with Advanced only: {advanced_count:,} "
+   130:           f"({percentages_rounded['Advanced']:.2f}%)")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:133
+   130:           f"({percentages_rounded['Advanced']:.2f}%)")
+   131:     print(f"✓ Repositories with Mixed: {mixed_count:,} "
+   132:           f"({percentages_rounded['Mixed']:.2f}%)")
+   133:     print(f"✓ Total Advanced/Mixed: {advanced_mixed:,} "
+   134:           f"({advanced_mixed/total_valid*100:.1f}%)")
+   135:     print(f"○ Repositories with Basic only: {int(exception_counts['Basic']):,} "
+   136:           f"({percentages_rounded['Basic']:.2f}%)")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:134
+   131:     print(f"✓ Repositories with Mixed: {mixed_count:,} "
+   132:           f"({percentages_rounded['Mixed']:.2f}%)")
+   133:     print(f"✓ Total Advanced/Mixed: {advanced_mixed:,} "
+   134:           f"({advanced_mixed/total_valid*100:.1f}%)")
+   135:     print(f"○ Repositories with Basic only: {int(exception_counts['Basic']):,} "
+   136:           f"({percentages_rounded['Basic']:.2f}%)")
+   137:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:308
+   305:     
+   306:     none_count = int(counts['None'])
+   307:     with_handling = total_valid - none_count
+   308:     advanced_mixed = int(counts['Advanced']) + int(counts['Mixed'])
+   309:     
+   310:     lines.append(f"Repositories WITH exception handling: {with_handling:,} "
+   311:                  f"({with_handling/total_valid*100:.1f}%)")
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:314
+   311:                  f"({with_handling/total_valid*100:.1f}%)")
+   312:     lines.append(f"Repositories WITHOUT exception handling: {none_count:,} "
+   313:                  f"({pct_rounded['None']:.2f}%)")
+   314:     lines.append(f"Repositories with Advanced/Mixed: {advanced_mixed:,} "
+   315:                  f"({advanced_mixed/total_valid*100:.1f}%)")
+   316:     lines.append("")
+   317:     lines.append("="*70)
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:315
+   312:     lines.append(f"Repositories WITHOUT exception handling: {none_count:,} "
+   313:                  f"({pct_rounded['None']:.2f}%)")
+   314:     lines.append(f"Repositories with Advanced/Mixed: {advanced_mixed:,} "
+   315:                  f"({advanced_mixed/total_valid*100:.1f}%)")
+   316:     lines.append("")
+   317:     lines.append("="*70)
+   318:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py:343
+   340:         df_all, df_valid, df_failed = load_and_clean_data(csv_file)
+   341:         
+   342:         # Analyze
+   343:         results = analyze_exception_types(df_valid, df_failed)
+   344:         
+   345:         # Verify data consistency
+   346:         assert results['counts'].sum() == results['valid_repositories'], \
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:46
+    43:     df_filtered = df[df['Language'] != 'Multiple'].copy()
+    44: 
+    45:     # Extract count columns (adjust names based on your CSV)
+    46:     count_cols = ['None', 'Basic', 'Mixed', 'Advanced']
+    47:     
+    48:     # Verify columns exist
+    49:     missing_cols = [col for col in count_cols if col not in df_filtered.columns]
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:90
+    87:     contingency_df = pd.DataFrame(
+    88:         contingency_table,
+    89:         index=languages,
+    90:         columns=['None', 'Basic', 'Mixed', 'Advanced']
+    91:     )
+    92:     print(contingency_df)
+    93:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:177
+   174:     expected_df = pd.DataFrame(
+   175:         expected,
+   176:         index=languages,
+   177:         columns=['None', 'Basic', 'Mixed', 'Advanced']
+   178:     )
+   179:     print(expected_df.round(2).to_string())
+   180:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:209
+   206:     contribution_df = pd.DataFrame(
+   207:         residuals,
+   208:         index=languages,
+   209:         columns=['None', 'Basic', 'Mixed', 'Advanced']
+   210:     )
+   211:     
+   212:     # Flatten and get top 10 contributors
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:215
+   212:     # Flatten and get top 10 contributors
+   213:     flat_contrib = []
+   214:     for i, lang in enumerate(languages):
+   215:         for j, cat in enumerate(['None', 'Basic', 'Mixed', 'Advanced']):
+   216:             flat_contrib.append({
+   217:                 'Language': lang,
+   218:                 'Category': cat,
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:340
+   337:     plt.close(fig2)
+   338: 
+   339:     # ----------------------------------------
+   340:     # Figure 3: Advanced/Mixed adoption bar chart
+   341:     # ----------------------------------------
+   342:     fig3, ax3 = plt.subplots(figsize=(12, 7))
+   343: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:344
+   341:     # ----------------------------------------
+   342:     fig3, ax3 = plt.subplots(figsize=(12, 7))
+   343: 
+   344:     df_viz['Advanced_Mixed %'] = df_viz[[c for c in pct_cols if 'Mixed' in c or 'Advanced' in c]].sum(axis=1)
+   345: 
+   346:     x = np.arange(len(languages))
+   347:     bars = ax3.bar(
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:348
+   345: 
+   346:     x = np.arange(len(languages))
+   347:     bars = ax3.bar(
+   348:         x, df_viz['Advanced_Mixed %'].values,
+   349:         color='#2ecc71', edgecolor='black', linewidth=1.5
+   350:     )
+   351: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:361
+   358:         )
+   359: 
+   360:     ax3.set_xlabel('Programming Language', fontsize=14, weight='bold')
+   361:     ax3.set_ylabel('Advanced/Mixed Adoption (%)', fontsize=14, weight='bold')
+   362:     ax3.set_title('Advanced and Mixed Pattern Adoption by Language', fontsize=16, weight='bold')
+   363:     ax3.set_xticks(x)
+   364:     ax3.set_xticklabels(languages, rotation=45, ha='right')
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:362
+   359: 
+   360:     ax3.set_xlabel('Programming Language', fontsize=14, weight='bold')
+   361:     ax3.set_ylabel('Advanced/Mixed Adoption (%)', fontsize=14, weight='bold')
+   362:     ax3.set_title('Advanced and Mixed Pattern Adoption by Language', fontsize=16, weight='bold')
+   363:     ax3.set_xticks(x)
+   364:     ax3.set_xticklabels(languages, rotation=45, ha='right')
+   365:     ax3.grid(axis='y', alpha=0.3, linestyle='--')
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:368
+   365:     ax3.grid(axis='y', alpha=0.3, linestyle='--')
+   366:     ax3.set_axisbelow(True)
+   367: 
+   368:     avg = df_viz['Advanced_Mixed %'].mean()
+   369:     ax3.axhline(y=avg, color='red', linestyle='--', linewidth=2, label=f'Average: {avg:.1f}%')
+   370:     ax3.legend()
+   371: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:404
+   401:     text_table.append("EXCEPTION HANDLING DISTRIBUTION BY LANGUAGE (FROM RAW COUNTS)")
+   402:     text_table.append("="*85)
+   403:     text_table.append("")
+   404:     text_table.append(f"{'Language':<12} {'Repos':>7} {'None%':>8} {'Basic%':>8} {'Mixed%':>8} {'Adv%':>8}")
+   405:     text_table.append("-"*85)
+   406: 
+   407:     for _, row in df_table.iterrows():
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py:474
+   471:     print("\nOutput files:")
+   472:     print("  1. language_exception_distribution_stacked.pdf - Stacked bar chart")
+   473:     print("  2. language_exception_heatmap.pdf - Heatmap visualization")
+   474:     print("  3. language_advanced_adoption.pdf - Advanced/Mixed adoption")
+   475:     print("  4. language_chi_square_results.txt - Statistical results summary")
+   476:     print("\n" + "="*70)
+   477: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pattern_analysis_summary.txt:9
+     6: ======================================================================
+     7: 
+     8: ✓ Loaded data for 10 language categories
+     9: ✓ Columns: ['Language', 'Try-Catch', 'Timeout', 'Retry', 'Circuit Breaker', 'Backoff', 'Status Check']
+    10: 
+    11: Pattern Adoption Data (with percentages):
+    12:   Language  Total_Repos  Try-Catch_Pct  Timeout_Pct  Retry_Pct  Circuit Breaker_Pct  Backoff_Pct  Status Check_Pct
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pattern_analysis_summary.txt:12
+     9: ✓ Columns: ['Language', 'Try-Catch', 'Timeout', 'Retry', 'Circuit Breaker', 'Backoff', 'Status Check']
+    10: 
+    11: Pattern Adoption Data (with percentages):
+    12:   Language  Total_Repos  Try-Catch_Pct  Timeout_Pct  Retry_Pct  Circuit Breaker_Pct  Backoff_Pct  Status Check_Pct
+    13:     Python         2399           72.3          1.8        9.8                  0.0          0.0              18.8
+    14:       Java          301           40.9         24.9       35.2                  0.7          0.0              40.9
+    15: Javascript         6320           59.4         60.5        2.6                  5.6          0.4              46.0
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pattern_analysis_summary.txt:118
+   115: WITH:
+   116:   "Multi-language repositories exhibit systematically higher adoption 
+   117:    across all six resilience patterns (Figure X). The most pronounced 
+   118:    differences appear in advanced mechanisms: Retry (35.9% vs 7.6%, 
+   119:    4.7× higher), Circuit Breaker (16.2% vs 3.8%, 4.3× higher), and 
+   120:    Try-Catch (79.3% vs 58.8%, 1.3× higher). On average across the 
+   121:    six patterns, multi-language repositories show 10% higher adoption 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pattern_adoption_analysis.py:55
+    52:     df['Total_Repos'] = df['Language'].map(repo_counts)
+    53:     
+    54:     # Calculate percentages for each pattern
+    55:     patterns = ['Try-Catch', 'Timeout', 'Retry', 'Circuit Breaker', 'Backoff', 'Status Check']
+    56:     
+    57:     for pattern in patterns:
+    58:         if pattern in df.columns:
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/exception_handling_summary_corrected.txt:22
+    19: ----------------------------------------------------------------------
+    20: Repositories WITH exception handling: 16,876 (100.0%)
+    21: Repositories WITHOUT exception handling: 0 (0.00%)
+    22: Repositories with Advanced/Mixed patterns: 8,743 (51.8%)
+    23: 
+    24: ======================================================================
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exemplars/advanced_exception_handling_exemplars.txt:10
+     7: from urllib3.util.retry import Retry
+     8: import time
+     9: 
+    10: # Retry with exponential backoff and timeout
+    11: session = requests.Session()
+    12: retry_strategy = Retry(
+    13:     total=3,
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exemplars/advanced_exception_handling_exemplars.txt:93
+    90: import axios, { AxiosError } from 'axios';
+    91: import axiosRetry from 'axios-retry';
+    92: 
+    93: // Configure retry with exponential backoff and timeout
+    94: axiosRetry(axios, {
+    95:     retries: 3,
+    96:     retryDelay: (retryCount) => {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exemplars/advanced_exception_handling_exemplars.txt:158
+   155:     "github.com/cenkalti/backoff/v4"
+   156: )
+   157: 
+   158: // Retry with exponential backoff and timeout
+   159: operation := func() error {
+   160:     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+   161:     defer cancel()
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exemplars/advanced_exception_handling_exemplars.txt:195
+   192: require 'net/http'
+   193: require 'timeout'
+   194: 
+   195: # Retry with exponential backoff and timeout
+   196: Retriable.retriable(
+   197:     tries: 3,
+   198:     base_interval: 1.0,        # start at 1 second
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exemplars/advanced_exception_handling_exemplars.txt:223
+   220: import kotlinx.coroutines.*
+   221: import kotlin.math.pow
+   222: 
+   223: // Retry with exponential backoff and timeout
+   224: suspend fun fetchWithRetry(url: String): String {
+   225:     val maxRetries = 3
+   226:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exemplars/advanced_exception_handling_exemplars.txt:257
+   254: \begin{lstlisting}[language=Swift, caption={Swift Advanced Exception Handling Exemplar}]
+   255: import Foundation
+   256: 
+   257: // Retry with exponential backoff and timeout
+   258: func fetchWithRetry(url: String) async throws -> Data {
+   259:     let maxRetries = 3
+   260:     
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/Program.cs:183
+   180:             patterns["status_check"] = true;
+   181:         }
+   182: 
+   183:         // Timeout patterns (advanced) - case-insensitive
+   184:         if (expression.Contains("timeout") || expression.Contains("withtimeout"))
+   185:         {
+   186:             hasAdvancedHandling = true;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/Program.cs:190
+   187:             patterns["timeout"] = true;
+   188:         }
+   189: 
+   190:         // Retry patterns (advanced)
+   191:         if (expression.Contains("retry") || expression.Contains("retryasync") ||
+   192:             expression.Contains("waitandretry"))
+   193:         {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/Program.cs:198
+   195:             patterns["retry"] = true;
+   196:         }
+   197: 
+   198:         // Circuit breaker patterns (advanced)
+   199:         if (expression.Contains("circuitbreaker") || expression.Contains("breaker"))
+   200:         {
+   201:             hasAdvancedHandling = true;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/Program.cs:205
+   202:             patterns["circuit_breaker"] = true;
+   203:         }
+   204: 
+   205:         // Backoff patterns (advanced)
+   206:         if (expression.Contains("backoff") || expression.Contains("exponentialbackoff"))
+   207:         {
+   208:             hasAdvancedHandling = true;
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/parse_go_code.go:272
+   269:         a.patterns["status_check"] = true
+   270:     }
+   271: 
+   272:     // Context timeout/deadline patterns (advanced)
+   273:     if pkgName == "context" {
+   274:         switch methodName {
+   275:         case "WithTimeout", "WithDeadline":
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/test.go:38
+    35: 
+    36: // Example 1: Context-based timeout (THE standard Go pattern)
+    37: func callAPIWithTimeout() error {
+    38: 	// PATTERN: context.WithTimeout - Advanced timeout handling
+    39: 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    40: 	defer cancel()
+    41: 
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/test.go:52
+    49: 
+    50: // Example 2: Context with deadline
+    51: func callAPIWithDeadline() error {
+    52: 	// PATTERN: context.WithDeadline - Advanced timeout handling
+    53: 	deadline := time.Now().Add(10 * time.Second)
+    54: 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+    55: 	defer cancel()
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/test.go:79
+    76: 		return makeHTTPRequest(ctx)
+    77: 	}
+    78: 
+    79: 	// PATTERN: backoff.Retry - Advanced retry with exponential backoff
+    80: 	err := backoff.Retry(operation, expBackoff)
+    81: 	if err != nil {
+    82: 		return fmt.Errorf("all retry attempts failed: %w", err)
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/test.go:104
+   101: 	return nil
+   102: }
+   103: 
+   104: // Example 5: Combined patterns - Context timeout + Retry + Circuit breaker
+   105: func resilientAPICall() error {
+   106: 	// PATTERN: Multiple resilience patterns combined
+   107: 	operation := func() error {
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/src/main/java/JavaParserAnalyzer.java:29
+    26:  * 
+    27:  * Detects:
+    28:  * - Basic exception handling: try-catch, throw, throws, finally
+    29:  * - Advanced patterns: retry, timeout, circuit breaker, backoff
+    30:  * - Java resilience libraries: Resilience4j, Hystrix, Spring Retry, Failsafe
+    31:  * - Annotation-based patterns: @Retry, @HystrixCommand, @CircuitBreaker, etc.
+    32:  * - Class-based patterns: RetryConfig, CircuitBreakerRegistry, etc.
+
+====================================================================================================
+/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/src/main/java/JavaParserAnalyzer.java:320
+   317:         
+   318:         /**
+   319:          * Enhanced method call detection
+   320:          * Detects: .retry(), Retry.of(), .withTimeout(), etc.
+   321:          */
+   322:         @Override
+   323:         public void visit(MethodCallExpr n, Void arg) {
+

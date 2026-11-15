@@ -1,0 +1,139 @@
+{
+  "project_root": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH",
+  "csv_summaries": [
+    {
+      "path": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exception_Handling _Analysis_Output /analyzed_repositories.csv",
+      "encoding": "utf-8-sig",
+      "row_count": 16876,
+      "category_column": "Exception Type",
+      "repo_column": "repo_url",
+      "advanced_columns": {
+        "timeout": [
+          "Has Timeout"
+        ],
+        "retry": [
+          "Has Retry"
+        ],
+        "backoff": [
+          "Has Backoff"
+        ],
+        "circuit_breaker": [
+          "Has Circuit Breaker"
+        ]
+      },
+      "category_counts": {
+        "mixed": 8153,
+        "basic": 5503,
+        "none": 2630,
+        "advanced": 590
+      },
+      "mixed_count": 8153,
+      "mixed_depth_distribution": {
+        "0": 133,
+        "1": 5049,
+        "2": 1979,
+        "3": 810,
+        "4": 182
+      },
+      "mixed_depth_zero_count": 133,
+      "mixed_unknown_depth_count": 0,
+      "anomalies": {
+        "basic_with_advanced_signal": 1060,
+        "mixed_with_zero_advanced": 133,
+        "advanced_with_zero_advanced": 26
+      },
+      "mixed_depth_zero_csv": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/mixed_depth_zero_investigation/analyzed_repositories__mixed_depth0.csv",
+      "auto_discovery_score": 30
+    },
+    {
+      "path": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exception_Handling _Analysis_Output /nip_analyzer_output.csv",
+      "encoding": "utf-8-sig",
+      "row_count": 17410,
+      "category_column": "Exception Type",
+      "repo_column": "repo_url",
+      "advanced_columns": {
+        "timeout": [
+          "Has Timeout"
+        ],
+        "retry": [
+          "Has Retry"
+        ],
+        "backoff": [
+          "Has Backoff"
+        ],
+        "circuit_breaker": [
+          "Has Circuit Breaker"
+        ]
+      },
+      "category_counts": {
+        "mixed": 8153,
+        "basic": 5503,
+        "none": 3164,
+        "advanced": 590
+      },
+      "mixed_count": 8153,
+      "mixed_depth_distribution": {
+        "0": 133,
+        "1": 5049,
+        "2": 1979,
+        "3": 810,
+        "4": 182
+      },
+      "mixed_depth_zero_count": 133,
+      "mixed_unknown_depth_count": 0,
+      "anomalies": {
+        "basic_with_advanced_signal": 1060,
+        "mixed_with_zero_advanced": 133,
+        "advanced_with_zero_advanced": 26
+      },
+      "mixed_depth_zero_csv": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/mixed_depth_zero_investigation/nip_analyzer_output__mixed_depth0.csv",
+      "auto_discovery_score": 30
+    },
+    {
+      "path": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/nip_analyzer_output.csv",
+      "encoding": "utf-8-sig",
+      "row_count": 17410,
+      "category_column": "Exception Type",
+      "repo_column": "repo_url",
+      "advanced_columns": {
+        "timeout": [
+          "Has Timeout"
+        ],
+        "retry": [
+          "Has Retry"
+        ],
+        "backoff": [
+          "Has Backoff"
+        ],
+        "circuit_breaker": [
+          "Has Circuit Breaker"
+        ]
+      },
+      "category_counts": {
+        "mixed": 8153,
+        "basic": 5503,
+        "none": 3164,
+        "advanced": 590
+      },
+      "mixed_count": 8153,
+      "mixed_depth_distribution": {
+        "0": 133,
+        "1": 5049,
+        "2": 1979,
+        "3": 810,
+        "4": 182
+      },
+      "mixed_depth_zero_count": 133,
+      "mixed_unknown_depth_count": 0,
+      "anomalies": {
+        "basic_with_advanced_signal": 1060,
+        "mixed_with_zero_advanced": 133,
+        "advanced_with_zero_advanced": 26
+      },
+      "mixed_depth_zero_csv": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/mixed_depth_zero_investigation/nip_analyzer_output__mixed_depth0.csv",
+      "auto_discovery_score": 30
+    }
+  ],
+  "classification_logic_hit_count": 133,
+  "classification_logic_report": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/mixed_depth_zero_investigation/classification_logic_hits.txt"
+}

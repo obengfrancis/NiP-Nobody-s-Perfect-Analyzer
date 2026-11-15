@@ -1,0 +1,145 @@
+{
+  "csv": "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/Exception_Handling _Analysis_Output /analyzed_repositories.csv",
+  "rows": 16876,
+  "category_column": "Exception Type",
+  "repo_column": "repo_url",
+  "advanced_columns": {
+    "timeout": [
+      "Has Timeout"
+    ],
+    "retry": [
+      "Has Retry"
+    ],
+    "backoff": [
+      "Has Backoff"
+    ],
+    "circuit_breaker": [
+      "Has Circuit Breaker"
+    ]
+  },
+  "basic_columns": {
+    "try_catch": [
+      "Has Try-Catch"
+    ],
+    "status_error_check": [
+      "Has Status Check"
+    ]
+  },
+  "other_potentially_relevant_columns": [
+    "Exception Type"
+  ],
+  "category_depth": {
+    "Mixed": {
+      "2": 1979,
+      "1": 5049,
+      "3": 810,
+      "0": 133,
+      "4": 182
+    },
+    "Basic": {
+      "0": 4443,
+      "2": 77,
+      "1": 978,
+      "3": 5
+    },
+    "None": {
+      "0": 2630
+    },
+    "Advanced": {
+      "1": 527,
+      "0": 26,
+      "2": 34,
+      "3": 3
+    }
+  },
+  "reconstructable": true,
+  "stored_vs_reconstructed": {
+    "Mixed->Mixed": 7350,
+    "Basic->Basic": 3788,
+    "Basic->None": 655,
+    "None->None": 2630,
+    "Basic->Mixed": 957,
+    "Mixed->Advanced": 670,
+    "Advanced->Advanced": 426,
+    "Mixed->None": 17,
+    "Advanced->None": 26,
+    "Basic->Advanced": 103,
+    "Mixed->Basic": 116,
+    "Advanced->Mixed": 138
+  },
+  "mismatch_count": 2682,
+  "source_search": {
+    "hit_count": 201,
+    "files_with_hits": 17,
+    "top_files": [
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/mixed_depth_zero_investigation/classification_logic_hits.txt",
+        96
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/audit_category_signal_consistency.py",
+        17
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pie_chart.py",
+        15
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/README.md",
+        13
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/WebServFH.py",
+        11
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/ch-square_cat_by_lang_analysis.py",
+        11
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/nip_analyzer_documentation.md",
+        9
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/investigate_mixed_depth_zero.py",
+        8
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/DETECTION_RULES.md",
+        5
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/CSharpParser/Program.cs",
+        4
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/cs_exception_patterns.cs",
+        3
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/test.go",
+        3
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/exception_handling_summary_corrected.txt",
+        2
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/language_chi_square_results.txt",
+        1
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/analysis/Pattern_analysis_summary.txt",
+        1
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/parse_go_code/parse_go_code.go",
+        1
+      ],
+      [
+        "/Users/francisobeng/Developer/Web_Services/Web_Services/NEW_AST_WEBSERVFH/src/main/java/JavaParserAnalyzer.java",
+        1
+      ]
+    ]
+  }
+}

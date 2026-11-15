@@ -34,22 +34,15 @@ def load_and_prepare_data(filepath):
     print(f"\n✓ Loaded data for {len(df)} language categories")
     print(f"✓ Columns: {list(df.columns)}")
     
-    # Repository counts
-    repo_counts = {
-        'Python': 2399,
-        'Java': 301,
-        'Javascript': 6320,
-        'Typescript': 386,
-        'Go': 147,
-        'C#': 86,
-        'Ruby': 164,
-        'Kotlin': 146,
-        'Swift': 107,
-        'Multiple': 6820
-    }
+    # Repository counts: read from the category table so they always match the
+    # analyzer output (previously hardcoded from the non-deduplicated data).
+    _cat = pd.read_csv('exception_categories_count_by_language.csv', encoding='utf-8-sig')
+    _cat.columns = _cat.columns.str.strip()
+    repo_counts = {str(k).strip().lower(): int(v) for k, v in zip(_cat['Language'], _cat['Repositories'])}
+
+    # Add total repos column (case-insensitive language match)
+    df['Total_Repos'] = df['Language'].str.strip().str.lower().map(repo_counts)
     
-    # Add total repos column
-    df['Total_Repos'] = df['Language'].map(repo_counts)
     
     # Calculate percentages for each pattern
     patterns = ['Try-Catch', 'Timeout', 'Retry', 'Circuit Breaker', 'Backoff', 'Status Check']

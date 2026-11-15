@@ -1,0 +1,5 @@
+,percent_of_mixed
+Has Timeout,91.0
+Has Retry,40.7
+Has Circuit Breaker,21.8
+Has Backoff,5.6

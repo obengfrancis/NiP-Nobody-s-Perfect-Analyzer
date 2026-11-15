@@ -1,0 +1,7 @@
+stage,count
+"Source rows (repository-service pairs, incl. repeats)",19231
+Unique repositories in source list,8428
+Not cloned / no analyzer output,852
+Cloned (unique repositories with analyzer output),7576
+Parser failures (0% parser success),272
+Analyzed (parser success > 0),7304
